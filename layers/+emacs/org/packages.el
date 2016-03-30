@@ -18,6 +18,7 @@
     evil-surround
     flyspell
     gnuplot
+    helm-bibtex
     htmlize
     mu4e
     ;; ob, org and org-agenda are installed by `org-plus-contrib'
@@ -30,6 +31,7 @@
     (org-mime :location built-in)
     org-pomodoro
     org-present
+    org-ref
     org-repo-todo
     (ox-gfm :location local)
     persp-mode
@@ -243,6 +245,7 @@ Will work on both org-mode and any mode that accepts plain html."
         "N" 'widen
         "O" 'org-clock-out
         "q" 'org-clock-cancel
+        "r" 'org-ref-helm-insert-cite-link
         "R" 'org-refile
         "s" 'org-schedule
 
@@ -566,4 +569,8 @@ a Markdown buffer and use this command to convert it.
 
 (defun org/init-htmlize ()
  (use-package htmlize
+    :defer t))
+
+(defun org/init-org-ref ()
+  (use-package org-ref
     :defer t))
