@@ -9,6 +9,66 @@
 ;;
 ;;; License: GPLv3
 
+;; ---------------------------------------------------------------------------
+;; Prefixes
+;; ---------------------------------------------------------------------------
+
+;; We define prefix commands only for the sake of which-key
+(setq spacemacs/key-binding-prefixes '(("a"   "applications")
+                                       ("ai"  "irc")
+                                       ("as"  "shells")
+                                       ("b"   "buffers")
+                                       ("bm"  "move")
+                                       ("c"   "compile/comments")
+                                       ("C"   "capture/colors")
+                                       ("e"   "errors")
+                                       ("f"   "files")
+                                       ("fC"  "files/convert")
+                                       ("fe"  "emacs(spacemacs)")
+                                       ("fv"  "variables")
+                                       ("g"   "git/versions-control")
+                                       ("h"   "help")
+                                       ("hd"  "help-describe")
+                                       ("i"   "insertion")
+                                       ("j"   "jump/join/split")
+                                       ("k"   "lisp")
+                                       ("kd"  "delete")
+                                       ("kD"  "delete-backward")
+                                       ("k`"  "hybrid")
+                                       ("n"   "narrow/numbers")
+                                       ("p"   "projects")
+                                       ("p$"  "projects/shell")
+                                       ("q"   "quit")
+                                       ("r"   "registers/rings/resume")
+                                       ("Re"  "elisp")
+                                       ("Rp"  "pcre")
+                                       ("s"   "search/symbol")
+                                       ("sa"  "ag")
+                                       ("sg"  "grep")
+                                       ("sk"  "ack")
+                                       ("st"  "pt")
+                                       ("sw"  "web")
+                                       ("t"   "toggles")
+                                       ("tC"  "colors")
+                                       ("tE"  "editing-styles")
+                                       ("th"  "highlight")
+                                       ("tm"  "modeline")
+                                       ("T"   "UI toggles/themes")
+                                       ("C-t" "other toggles")
+                                       ("w"   "windows")
+                                       ("wp"  "popup")
+                                       ("x"   "text")
+                                       ("xa"  "align")
+                                       ("xd"  "delete")
+                                       ("xg"  "google-translate")
+                                       ("xl"  "lines")
+                                       ("xm"  "move")
+                                       ("xt"  "transpose")
+                                       ("xw"  "words")
+                                       ("z"   "zoom")))
+(mapc (lambda (x) (apply #'spacemacs/declare-prefix x))
+      spacemacs/key-binding-prefixes)
+
 ;; instantly display current keystrokes in mini buffer
 (setq echo-keystrokes 0.02)
 ;; auto-indent on RET
@@ -251,13 +311,13 @@
   :on (semantic-stickyfunc-mode)
   :off (semantic-stickyfunc-mode -1)
   :documentation "Enable semantic-stickyfunc."
-  :evil-leader "Ts")
+  :evil-leader "TS")
 (spacemacs|add-toggle semantic-stickyfunc-globally
   :status global-semantic-stickyfunc-mode
   :on (global-semantic-stickyfunc-mode)
   :off (global-semantic-stickyfunc-mode -1)
   :documentation "Enable semantic-stickyfunc globally."
-  :evil-leader "T C-s")
+  :evil-leader "T C-S")
 ;; quit -----------------------------------------------------------------------
 (spacemacs/set-leader-keys
   "qs" 'spacemacs/save-buffers-kill-emacs

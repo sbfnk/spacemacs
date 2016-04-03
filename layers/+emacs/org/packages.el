@@ -35,6 +35,7 @@
     org-repo-todo
     (ox-gfm :location local)
     persp-mode
+    (space-doc :location local)
     toc-org
     ))
 
@@ -574,3 +575,5 @@ a Markdown buffer and use this command to convert it.
 (defun org/init-org-ref ()
   (use-package org-ref
     :defer t))
+
+(defun org/init-space-doc ())
