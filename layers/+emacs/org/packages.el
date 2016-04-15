@@ -27,6 +27,8 @@
     (org-agenda :location built-in)
     (org-plus-contrib :step pre)
     org-bullets
+    (org-contacts :location built-in)
+    (org-habits :location built-in)
     ;; org-mime is installed by `org-plus-contrib'
     (org-mime :location built-in)
     org-pomodoro
@@ -452,6 +454,14 @@ Headline^^            Visit entry^^               Filter^^                    Da
     :defer t
     :init (add-hook 'org-mode-hook 'org-bullets-mode)))
 
+(defun org/init-org-contacts ()
+  (use-package org-contacts
+    :defer t))
+
+(defun org/init-org-habits ()
+  (use-package org-habits
+    :defer t))
+
 (defun org/init-org-mime ()
   (use-package org-mime
     :defer t
@@ -498,6 +508,10 @@ Headline^^            Visit entry^^               Filter^^                    Da
         (evil-normal-state))
       (add-hook 'org-present-mode-hook 'spacemacs//org-present-start)
       (add-hook 'org-present-mode-quit-hook 'spacemacs//org-present-end))))
+
+(defun org/init-org-ref ()
+  (use-package org-ref
+    :defer t))
 
 (defun org/init-org-repo-todo ()
   (use-package org-repo-todo
@@ -570,10 +584,6 @@ a Markdown buffer and use this command to convert it.
 
 (defun org/init-htmlize ()
  (use-package htmlize
-    :defer t))
-
-(defun org/init-org-ref ()
-  (use-package org-ref
     :defer t))
 
 (defun org/init-space-doc ())
