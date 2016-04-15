@@ -21,15 +21,16 @@
     helm-cscope
     helm-pydoc
     hy-mode
-    (nose :location local)
     live-py-mode
+    (nose :location local)
+    org
     pip-requirements
     pyenv-mode
     (pylookup :location local)
     pytest
     (python :location built-in)
     pyvenv
-    (py-yapf :location local)
+    py-yapf
     semantic
     smartparens
     stickyfunc-enhance
@@ -43,7 +44,9 @@
     (progn
       (setq anaconda-mode-installation-directory
             (concat spacemacs-cache-directory "anaconda-mode"))
-      (add-hook 'python-mode-hook 'anaconda-mode))
+      (add-hook 'python-mode-hook 'anaconda-mode)
+      (add-hook 'python-mode-hook
+                'spacemacs//disable-semantic-idle-summary-mode t))
     :config
     (progn
       (spacemacs/set-leader-keys-for-major-mode 'python-mode
@@ -74,7 +77,6 @@
       :defer t
       :init
       (push 'company-anaconda company-backends-python-mode))))
-
 
 (defun python/init-cython-mode ()
   (use-package cython-mode
@@ -152,6 +154,10 @@
       (add-to-list 'nose-project-root-files "setup.cfg")
       (setq nose-use-verbose nil))))
 
+(defun python/pre-init-org ()
+  (spacemacs|use-package-add-hook org
+    :post-config (add-to-list 'org-babel-load-languages '(python . t))))
+
 (defun python/init-pip-requirements ()
   (use-package pip-requirements
     :defer t
@@ -175,7 +181,6 @@
       (spacemacs/set-leader-keys-for-major-mode 'python-mode
         "vu" 'pyenv-mode-unset
         "vs" 'pyenv-mode-set))))
-
 
 (defun python/init-pyvenv ()
   (use-package pyvenv
@@ -382,7 +387,7 @@
 
 (defun python/init-py-yapf ()
   (use-package py-yapf
-    :defer t
+    :commands py-yapf-buffer
     :init (spacemacs/set-leader-keys-for-major-mode 'python-mode
             "=" 'py-yapf-buffer)
     :config (when python-enable-yapf-format-on-save
@@ -390,6 +395,7 @@
 
 (defun python/post-init-semantic ()
   (add-hook 'python-mode-hook 'semantic-mode)
+
   (defadvice semantic-python-get-system-include-path
       (around semantic-python-skip-error-advice activate)
     "Don't cause error when Semantic cannot retrieve include

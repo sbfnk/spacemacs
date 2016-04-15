@@ -113,7 +113,7 @@ LAYER has to be installed for this method to work properly."
              :initform elpa
              :type (satisfies (lambda (x)
                                 (or (stringp x)
-                                    (member x '(built-in local site elpa))
+                                    (memq x '(built-in local site elpa))
                                     (and (listp x) (eq 'recipe (car x))))))
              :documentation "Location of the package.")
    (toggle :initarg :toggle
@@ -711,7 +711,10 @@ If TOGGLEP is non nil then `:toggle' parameter is ignored."
 
 (defun configuration-layer//auto-mode (layer-name mode)
   "Auto mode support of lazily installed layers."
-  (configuration-layer//lazy-install-packages layer-name mode)
+  (let ((layer (object-assoc layer-name :name configuration-layer--layers)))
+    (when (or (null layer)
+              (oref layer :lazy-install))
+      (configuration-layer//lazy-install-packages layer-name mode)))
   (when (fboundp mode) (funcall mode)))
 
 (defun configuration-layer/filter-objects (objects ffunc)
@@ -866,8 +869,9 @@ path."
                                   layer-name))))
   (setq configuration-layer--layers (reverse configuration-layer--layers))
   ;; distribution and bootstrap layers are always first
-  (push (configuration-layer/make-layer dotspacemacs-distribution)
-        configuration-layer--layers)
+  (unless (eq 'spacemacs-bootstrap dotspacemacs-distribution)
+    (push (configuration-layer/make-layer dotspacemacs-distribution)
+          configuration-layer--layers))
   (push (configuration-layer/make-layer 'spacemacs-bootstrap)
         configuration-layer--layers))
 
@@ -969,9 +973,24 @@ path."
     (let ((file (concat (oref layer :dir) file)))
       (if (file-exists-p file) (load file)))))
 
-(defun configuration-layer/configured-packages-count ()
-  "Return the number of configured packages."
-  (length configuration-layer--packages))
+(defun configuration-layer/configured-packages-stats (packages)
+  "Return a statistics alist regarding the number of configured PACKAGES."
+  `((total ,(length packages))
+    (elpa ,(length (configuration-layer/filter-objects
+                    packages (lambda (x)
+                               (eq 'elpa (oref x :location))))))
+    (recipe ,(length (configuration-layer/filter-objects
+                      packages
+                      (lambda (x)
+                        (let ((location (oref x :location)))
+                          (and (listp location)
+                               (eq 'recipe (car location))))))))
+    (local ,(length (configuration-layer/filter-objects
+                     packages (lambda (x)
+                                (memq (oref x :location) '(local site))))))
+    (built-in ,(length (configuration-layer/filter-objects
+                        packages (lambda (x)
+                                   (eq 'built-in (oref x :location))))))))
 
 (defun configuration-layer//install-package (pkg)
   "Unconditionally install the package PKG."
@@ -1160,7 +1179,7 @@ path."
 (defun configuration-layer//configure-packages (packages)
   "Configure all passed PACKAGES honoring the steps order."
   (setq spacemacs-loading-dots-chunk-threshold
-        (/ (configuration-layer/configured-packages-count)
+        (/ (length configuration-layer--packages)
            spacemacs-loading-dots-chunk-count))
   (spacemacs-buffer/message "+ Configuring bootstrap packages...")
   (configuration-layer//configure-packages-2
@@ -1676,6 +1695,20 @@ to select one."
       (dolist (x mode-exts)
         (configuration-layer//insert-lazy-install-form
          layer-name (car x) (cdr x))))))
+
+(defun configuration-layer/display-summary (start-time)
+  "Display a summary of loading time."
+  (let ((elapsed (float-time (time-subtract (current-time) emacs-start-time)))
+        (stats (configuration-layer/configured-packages-stats
+                configuration-layer--packages)))
+    (spacemacs-buffer/append
+     (format "\n%s packages loaded in %.3fs (e:%s r:%s l:%s b:%s)\n"
+             (cadr (assq 'total stats))
+             elapsed
+             (cadr (assq 'elpa stats))
+             (cadr (assq 'recipe stats))
+             (cadr (assq 'local stats))
+             (cadr (assq 'built-in stats))))))
 
 (defun configuration-layer/load-or-install-protected-package
     (pkg &optional log file-to-load)
