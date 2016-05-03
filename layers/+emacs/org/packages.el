@@ -25,7 +25,7 @@
     (org :location built-in)
     (org-agenda :location built-in)
     (org-contacts :location built-in)
-    (org-habits :location built-in)
+    (org-habit :location built-in)
     ;; org-mime is installed by `org-plus-contrib'
     (org-mime :location built-in)
     org-pomodoro
@@ -427,12 +427,10 @@ Headline^^            Visit entry^^               Filter^^                    Da
       (kbd "s-M-SPC") 'spacemacs/org-agenda-transient-state/body)))
 
 (defun org/init-org-contacts ()
-  (use-package org-contacts
-    :defer t))
+  (use-package org-contacts))
 
-(defun org/init-org-habits ()
-  (use-package org-habits
-    :defer t))
+(defun org/init-org-habit ()
+  (use-package org-habit))
 
 (defun org/init-org-mime ()
   (use-package org-mime
