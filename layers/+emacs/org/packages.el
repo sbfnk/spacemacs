@@ -26,6 +26,7 @@
     (org-agenda :location built-in)
     (org-contacts :location built-in)
     (org-habit :location built-in)
+    org-download
     ;; org-mime is installed by `org-plus-contrib'
     (org-mime :location built-in)
     org-pomodoro
@@ -34,7 +35,6 @@
     org-repo-todo
     (ox-gfm :location local)
     persp-mode
-    (space-doc :location local)
     ))
 
 (when (configuration-layer/layer-usedp 'auto-completion)
@@ -87,7 +87,9 @@
         "Load all the languages declared in `org-babel-load-languages'."
         (org-babel-do-load-languages 'org-babel-load-languages
                                      org-babel-load-languages))
-      (add-hook 'org-mode-hook 'spacemacs//org-babel-do-load-languages))))
+      (add-hook 'org-mode-hook 'spacemacs//org-babel-do-load-languages)
+      ;; Fix redisplay of inline images after a code block evaluation.
+      (add-hook 'org-babel-after-execute-hook 'spacemacs/ob-fix-inline-images))))
 
 (defun org/init-org ()
   (use-package org
@@ -173,6 +175,7 @@ Will work on both org-mode and any mode that accepts plain html."
         ;; headings
         "hi" 'org-insert-heading-after-current
         "hI" 'org-insert-heading
+        "hs" 'org-insert-subheading
 
         ;; More cycling options (timestamps, headlines, items, properties)
         "L" 'org-shiftright
@@ -432,6 +435,18 @@ Headline^^            Visit entry^^               Filter^^                    Da
 (defun org/init-org-habit ()
   (use-package org-habit))
 
+(defun org/init-org-download ()
+  (use-package org-download
+    :commands (org-download-enable
+               org-download-yank
+               org-download-screenshot)
+    :init
+    (progn
+      (add-hook 'org-mode-hook 'org-download-enable)
+      (spacemacs/set-leader-keys-for-major-mode 'org-mode
+        "iy" 'org-download-yank
+        "is" 'org-download-screenshot))))
+
 (defun org/init-org-mime ()
   (use-package org-mime
     :defer t
@@ -485,14 +500,21 @@ Headline^^            Visit entry^^               Filter^^                    Da
 
 (defun org/init-org-repo-todo ()
   (use-package org-repo-todo
-    :defer t
+    :commands (ort/todo-root ort/find-root ort/todo-file)
     :init
     (progn
       (spacemacs/set-leader-keys
-        "Ct"  'ort/capture-todo
-        "CT"  'ort/capture-checkitem)
-      (spacemacs/set-leader-keys-for-major-mode 'org-mode
-        "gt" 'ort/goto-todos))))
+        "Ct" 'ort/capture-todo
+        "CT" 'ort/capture-checkitem
+        "aop" 'ort/list-project-todos)
+      (when (configuration-layer/package-usedp 'projectile)
+        (spacemacs/set-leader-keys
+          "aoT" 'ort/list-all-todos
+          "aoP" 'ort/list-all-project-todos)))
+    :config
+    ;; Better default capture template
+    (setcdr (cdddr (assoc "ort/todo" org-capture-templates))
+            '("* TODO %?\n%U\n\n%i" :empty-lines 1))))
 
 (defun org/init-ox-gfm ()
   ;; installing this package from melpa is buggy,
@@ -547,7 +569,3 @@ a Markdown buffer and use this command to convert it.
 (defun org/init-htmlize ()
  (use-package htmlize
    :defer t))
-
-(defun org/init-space-doc ()
-  (use-package space-doc
-    :config (spacemacs|diminish space-doc-mode " ❤" " d")))
