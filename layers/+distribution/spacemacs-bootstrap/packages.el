@@ -14,10 +14,11 @@
         (async :step bootstrap)
         (bind-map :step bootstrap)
         (bind-key :step bootstrap)
-        (dash :step bootstrap)
+        (diminish :step bootstrap)
         (evil :step bootstrap)
         (f :step bootstrap)
         (hydra :step bootstrap)
+        (page-break-lines :step bootstrap)
         (s :step bootstrap)
         (use-package :step bootstrap)
         (which-key :step bootstrap)
@@ -28,6 +29,8 @@
 (defun spacemacs-bootstrap/init-async ())
 
 (defun spacemacs-bootstrap/init-bind-key ())
+
+(defun spacemacs-bootstrap/init-diminish ())
 
 (defun spacemacs-bootstrap/init-bind-map ()
   (require 'bind-map)
@@ -128,16 +131,16 @@
   (spacemacs|define-transient-state scroll
     :title "Scrolling Transient State"
     :bindings
-    ("," evil-scroll-page-up "page up")
-    ("." evil-scroll-page-down "page down")
+    ("." evil-scroll-page-up "page up")
+    ("," evil-scroll-page-down "page down")
     ;; half page
-    ("<" evil-scroll-up "half page up")
-    (">" evil-scroll-down "half page down"))
+    (">" evil-scroll-up "half page up")
+    ("<" evil-scroll-down "half page down"))
   (spacemacs/set-leader-keys
-    "n," 'spacemacs/scroll-transient-state/evil-scroll-page-up
-    "n." 'spacemacs/scroll-transient-state/evil-scroll-page-down
-    "n<" 'spacemacs/scroll-transient-state/evil-scroll-up
-    "n>" 'spacemacs/scroll-transient-state/evil-scroll-down)
+    "n." 'spacemacs/scroll-transient-state/evil-scroll-page-up
+    "n," 'spacemacs/scroll-transient-state/evil-scroll-page-down
+    "n>" 'spacemacs/scroll-transient-state/evil-scroll-up
+    "n<" 'spacemacs/scroll-transient-state/evil-scroll-down)
 
   ;; pasting transient-state
   (evil-define-command spacemacs//transient-state-0 ()
@@ -222,6 +225,11 @@
   (require 'hydra)
   (setq hydra-key-doc-function 'spacemacs//hydra-key-doc-function
         hydra-head-format "[%s] "))
+
+(defun spacemacs-bootstrap/init-page-break-lines ()
+  (require 'page-break-lines)
+  (global-page-break-lines-mode t)
+  (spacemacs|hide-lighter page-break-lines-mode))
 
 (defun spacemacs-bootstrap/init-use-package ()
   (require 'use-package)
