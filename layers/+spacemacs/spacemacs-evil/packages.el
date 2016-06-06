@@ -102,7 +102,14 @@
 
 (defun spacemacs-evil/init-evil-mc ()
   (use-package evil-mc
-    :defer t))
+    :defer t
+    :init
+    ;; remove emc prefix when there is not multiple cursors
+    (setq evil-mc-mode-line
+          `(:eval (when (> (evil-mc-get-cursor-count) 1)
+                    (format ,(propertize " %s:%d" 'face 'cursor)
+                            evil-mc-mode-line-prefix
+                            (evil-mc-get-cursor-count)))))))
 
 ;; other commenting functions in funcs.el with keybinds in keybindings.el
 (defun spacemacs-evil/init-evil-nerd-commenter ()
@@ -322,9 +329,7 @@
     :defer t
     :init
     (spacemacs|add-toggle evil-visual-mark-mode
-      :status evil-visual-mark-mode
-      :on (evil-visual-mark-mode)
-      :off (evil-visual-mark-mode -1)
+      :mode evil-visual-mark-mode
       :documentation "Enable evil visual marks mode."
       :evil-leader "t`")))
 
@@ -350,9 +355,7 @@
      (progn
        (global-vi-tilde-fringe-mode)
        (spacemacs|add-toggle vi-tilde-fringe
-         :status vi-tilde-fringe-mode
-         :on (global-vi-tilde-fringe-mode)
-         :off (global-vi-tilde-fringe-mode -1)
+         :mode global-vi-tilde-fringe-mode
          :documentation
          "Globally display a ~ on empty lines in the fringe."
          :evil-leader "T~")

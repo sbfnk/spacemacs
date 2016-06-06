@@ -17,7 +17,6 @@
         (diminish :step bootstrap)
         (evil :step bootstrap)
         (hydra :step bootstrap)
-        (page-break-lines :step bootstrap)
         (use-package :step bootstrap)
         (which-key :step bootstrap)
         ))
@@ -67,7 +66,6 @@
            (eval `(defface ,(intern (format "spacemacs-%s-face" state))
                     `((t (:background ,color
                                       :foreground ,(face-background 'mode-line)
-                                      :box ,(face-attribute 'mode-line :box)
                                       :inherit 'mode-line)))
                     (format "%s state face." state)
                     :group 'spacemacs))
@@ -119,8 +117,9 @@
     (evil-map visual ">" ">gv"))
 
   ;; move selection up and down
-  (define-key evil-visual-state-map "J" (concat ":m '>+1" (kbd "RET") "gv=gv"))
-  (define-key evil-visual-state-map "K" (concat ":m '<-2" (kbd "RET") "gv=gv"))
+  (when dotspacemacs-visual-line-move-text
+    (define-key evil-visual-state-map "J" (concat ":m '>+1" (kbd "RET") "gv=gv"))
+    (define-key evil-visual-state-map "K" (concat ":m '<-2" (kbd "RET") "gv=gv")))
 
   (evil-ex-define-cmd "enew" 'spacemacs/new-empty-buffer)
 
@@ -172,6 +171,28 @@
       "p" 'spacemacs/paste-transient-state/evil-paste-after)
     (define-key evil-normal-state-map
       "P" 'spacemacs/paste-transient-state/evil-paste-before))
+  ;; fold transient state
+  (when (eq 'evil dotspacemacs-folding-method)
+    (spacemacs|define-transient-state fold
+      :title "Code Fold Transient State"
+      :doc "
+ Close^^          Open^^              Toggle^^             Other^^
+ ───────^^──────  ─────^^───────────  ─────^^────────────  ─────^^───
+ [_c_] at point   [_o_] at point      [_a_] around point   [_q_] quit
+ ^^               [_O_] recursively   ^^
+ [_m_] all        [_r_] all"
+      :foreign-keys run
+      :bindings
+      ("a" evil-toggle-fold)
+      ("c" evil-close-fold)
+      ("o" evil-open-fold)
+      ("O" evil-open-fold-rec)
+      ("r" evil-open-folds)
+      ("m" evil-close-folds)
+      ("q" nil :exit t)
+      ("C-g" nil :exit t)
+      ("<SPC>" nil :exit t)))
+  (spacemacs/set-leader-keys "z." 'spacemacs/fold-transient-state/body)
 
   ;; define text objects
   (spacemacs|define-text-object "$" "dollar" "$" "$")
@@ -226,11 +247,6 @@
   (setq hydra-key-doc-function 'spacemacs//hydra-key-doc-function
         hydra-head-format "[%s] "))
 
-(defun spacemacs-bootstrap/init-page-break-lines ()
-  (require 'page-break-lines)
-  (global-page-break-lines-mode t)
-  (spacemacs|hide-lighter page-break-lines-mode))
-
 (defun spacemacs-bootstrap/init-use-package ()
   (require 'use-package)
   (setq use-package-verbose init-file-debug
@@ -242,9 +258,7 @@
   (require 'which-key)
 
   (spacemacs|add-toggle which-key
-    :status which-key-mode
-    :on (which-key-mode)
-    :off (which-key-mode -1)
+    :mode which-key-mode
     :documentation
     "Display a buffer with available key bindings."
     :evil-leader "tK")

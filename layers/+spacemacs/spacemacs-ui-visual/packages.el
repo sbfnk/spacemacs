@@ -28,9 +28,7 @@
     :init
     (progn
       (spacemacs|add-toggle mode-line-battery
-        :status fancy-battery-mode
-        :on (fancy-battery-mode)
-        :off (fancy-battery-mode -1)
+        :mode fancy-battery-mode
         :documentation "Display battery info in mode-line."
         :evil-leader "tmb")
       (setq-default fancy-battery-show-percentage t))))
@@ -52,7 +50,7 @@
         :documentation "Display the fill column indicator."
         :evil-leader "tf"))
     :config
-    (spacemacs|hide-lighter fci-mode)))
+    (spacemacs|diminish fci-mode " ⓕ" " f")))
 
 (defun spacemacs-ui-visual/init-golden-ratio ()
   (use-package golden-ratio

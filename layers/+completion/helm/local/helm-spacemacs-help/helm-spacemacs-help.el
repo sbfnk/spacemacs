@@ -50,12 +50,9 @@
     (mapc (lambda (layer) (push (configuration-layer/make-layer layer)
                                 helm-spacemacs-help-all-layers))
           (configuration-layer/get-layers-list))
-    (dolist (layer helm-spacemacs-help-all-layers)
-      (unless (configuration-layer/layer-usedp (oref layer :name))
-        (configuration-layer//load-layer-files layer '("funcs.el"
-                                                       "config.el"))))
-    (setq helm-spacemacs-help-all-packages (configuration-layer/get-packages
-                                       helm-spacemacs-help-all-layers))))
+    (let (configuration-layer--packages)
+      (configuration-layer/get-packages helm-spacemacs-help-all-layers)
+      (setq helm-spacemacs-help-all-packages configuration-layer--packages))))
 
 ;;;###autoload
 (defun helm-spacemacs-help (arg)
@@ -179,7 +176,7 @@
            (condition-case-unless-debug nil
                (with-current-buffer (find-file-noselect file)
                  (gh-md-render-buffer)
-                 (kill-this-buffer))
+                 (spacemacs/kill-this-buffer))
              ;; if anything fails, fall back to simply open file
              (find-file file)))
           ((equal (file-name-extension file) "org")
@@ -234,19 +231,22 @@
 
 (defun helm-spacemacs-help//toggle-source ()
   "Construct the helm source for the toggles."
-  (helm-build-sync-source "Toggles"
-    :candidates #'helm-spacemacs-help//toggle-candidates
-    :persistent-action #'helm-spacemacs-help//toggle
-    :keymap helm-map
-    :action (helm-make-actions "Toggle" #'helm-spacemacs-help//toggle)))
+  (let ((candidates (helm-spacemacs-help//toggle-candidates)))
+    (helm-build-sync-source "Toggles"
+      :candidates candidates
+      :persistent-action #'helm-spacemacs-help//toggle
+      :keymap helm-map
+      :action (helm-make-actions "Toggle" #'helm-spacemacs-help//toggle))))
 
 (defun helm-spacemacs-help//toggle-candidates ()
   "Return the sorted candidates for toggle source."
   (let (result)
     (dolist (toggle spacemacs-toggles)
       (let* ((toggle-symbol (symbol-name (car toggle)))
+             (toggle-status (funcall (plist-get (cdr toggle) :predicate)))
              (toggle-name (capitalize (replace-regexp-in-string "-" " " toggle-symbol)))
-             (toggle-doc (format "%s: %s"
+             (toggle-doc (format "(%s) %s: %s"
+                                 (if toggle-status "+" "-")
                                  toggle-name
                                  (propertize
                                   (or (plist-get (cdr toggle) :documentation) "")
