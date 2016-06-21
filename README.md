@@ -115,8 +115,7 @@ If you prefer IRC, connect to the [Gitter Chat IRC server][] and join the
 
 ## Emacs
 
-Spacemacs is operational with Emacs 24.3, but Emacs 24.4 and above are highly
-recommended to enjoy a full experience. The next Emacs major release, Emacs 25,
+Spacemacs requires Emacs 24.4 or above. The next Emacs major release, Emacs 25,
 is not *officially* supported but is partially working (i.e. bugs should be
 expected).
 
@@ -132,9 +131,9 @@ XEmacs is an old fork of Emacs. The X in its name is unrelated to X11.
 Both Emacs and XEmacs have graphical support.
 
 **Note:** Ubuntu LTS 12.04 and 14.04 repositories have only Emacs 24.3
-available. You are advised to [build from source][build_source] Emacs 24.4 or
-greater, as most packages require this version. The same may be true for other
-distributions as well.
+available. You have to [build from source][build_source] Emacs 24.4 or greater,
+as Spacemacs won't work with 24.3. The same may be true for other distributions
+as well.
 
 ### OS X
 
@@ -218,8 +217,10 @@ For efficient searches we recommend to install `pt` ([the platinum searcher][]).
    emacs --insecure
    ```
 
-   You may wish to clear out your `.emacs.d/elpa` directory before doing this,
-   so that any corrupted packages you may have downloaded will be reinstalled.
+   Or you can set the `dotspacemacs-elpa-https` to `nil` in your dotfile to
+   remove the need to start Emacs with `--insecure` argument. You may wish to
+   clear out your `.emacs.d/elpa` directory before doing this, so that any
+   corrupted packages you may have downloaded will be reinstalled.
 
 4. Restart Emacs to complete the installation.
 
