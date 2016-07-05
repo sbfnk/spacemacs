@@ -513,19 +513,13 @@ Headline^^            Visit entry^^               Filter^^                    Da
       (add-hook 'org-present-mode-hook 'spacemacs//org-present-start)
       (add-hook 'org-present-mode-quit-hook 'spacemacs//org-present-end))))
 
-<<<<<<< HEAD
 (defun org/init-org-ref ()
   (use-package org-ref
     :defer t))
 
-(defun org/init-org-repo-todo ()
-  (use-package org-repo-todo
-    :commands (ort/todo-root ort/find-root ort/todo-file)
-=======
 (defun org/init-org-projectile ()
   (use-package org-projectile
     :commands (org-projectile:location-for-project)
->>>>>>> upstream/develop
     :init
     (progn
       (spacemacs/set-leader-keys
