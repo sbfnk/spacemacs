@@ -120,6 +120,8 @@ the final step of executing code in `emacs-startup-hook'.")
     (spacemacs|do-after-display-system-init
      (kill-buffer (get-buffer spacemacs-buffer-name))
      (spacemacs-buffer/goto-buffer)))
+  ;; This is set to nil during startup to allow Spacemacs to show buffers opened
+  ;; as command line arguments.
   (setq initial-buffer-choice nil)
   (setq inhibit-startup-screen t)
   (require 'core-keybindings)
@@ -177,6 +179,11 @@ defer call using `spacemacs-post-user-config-hook'."
   (add-hook
    'emacs-startup-hook
    (lambda ()
+     ;; This is set here so that emacsclient will show the startup buffer (and
+     ;; so that it can be changed in user-config if necessary). It was set to
+     ;; nil earlier in the startup process to properly handle command line
+     ;; arguments.
+     (setq initial-buffer-choice (lambda () (get-buffer spacemacs-buffer-name)))
      ;; Ultimate configuration decisions are given to the user who can defined
      ;; them in his/her ~/.spacemacs file
      (dotspacemacs|call-func dotspacemacs/user-config
@@ -202,7 +209,9 @@ defer call using `spacemacs-post-user-config-hook'."
            "- Distribution: %s\n"
            "- Editing style: %s\n"
            "- Completion: %s\n"
-           "- Layers:\n```elisp\n%s```\n")
+           "- Layers:\n```elisp\n%s```\n"
+           (when (version<= "25.1" emacs-version)
+             "- System configuration features: %s\n"))
    system-type
    emacs-version
    spacemacs-version
@@ -216,7 +225,8 @@ defer call using `spacemacs-post-user-config-hook'."
          ((configuration-layer/layer-usedp 'ivy)
           'ivy)
          (t 'helm))
-   (pp-to-string dotspacemacs-configuration-layers)))
+   (pp-to-string dotspacemacs--configuration-layers-saved)
+   (bound-and-true-p system-configuration-features)))
 
 (defun spacemacs/describe-system-info ()
   "Gathers info about your Spacemacs setup and copies to clipboard."

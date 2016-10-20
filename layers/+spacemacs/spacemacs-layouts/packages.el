@@ -12,6 +12,7 @@
 (setq spacemacs-layouts-packages
       '(eyebrowse
         helm
+        ivy
         persp-mode
         spaceline
         swiper))
@@ -84,6 +85,8 @@
                 #'spacemacs/save-eyebrowse-for-perspective)
       (add-hook 'persp-activated-functions
                 #'spacemacs/load-eyebrowse-for-perspective)
+      (add-hook 'persp-before-save-state-to-file-functions #'spacemacs/update-eyebrowse-for-perspective)
+      (add-hook 'persp-after-load-state-functions #'spacemacs/load-eyebrowse-after-loading-layout)
       ;; vim-style tab switching
       (define-key evil-motion-state-map "gt" 'eyebrowse-next-window-config)
       (define-key evil-motion-state-map "gT" 'eyebrowse-prev-window-config))))
@@ -92,7 +95,14 @@
 
 (defun spacemacs-layouts/post-init-helm ()
   (spacemacs/set-leader-keys
+    "Bb" 'spacemacs-layouts/non-restricted-buffer-list-helm
     "pl" 'spacemacs/helm-persp-switch-project))
+
+
+
+(defun spacemacs-layouts/post-init-ivy ()
+  (spacemacs/set-leader-keys
+    "Bb" 'spacemacs-layouts/non-restricted-buffer-list-ivy))
 
  
 
@@ -108,7 +118,7 @@
             persp-reset-windows-on-nil-window-conf nil
             persp-set-last-persp-for-new-frames nil
             persp-save-dir spacemacs-layouts-directory
-            persp-hook-up-emacs-buffer-completion t)
+            persp-set-ido-hooks t)
 
       (defun spacemacs//activate-persp-mode ()
         "Always activate persp-mode, unless it is already active.
@@ -206,8 +216,7 @@
       (spacemacs/set-leader-keys
         "TAB"  'spacemacs/alternate-buffer-in-persp
         "ba"   'persp-add-buffer
-        "br"   'persp-remove-buffer
-        "Bb"   'spacemacs-layouts/non-restricted-buffer-list))))
+        "br"   'persp-remove-buffer))))
 
 
 
