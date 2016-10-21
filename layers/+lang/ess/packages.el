@@ -108,6 +108,7 @@
       "ht" 'ess-R-dv-ctable
       )
     (define-key ess-mode-map (kbd "<s-return>") 'ess-eval-line)
+    (define-key inferior-ess-mode-map (kbd "C-d") 'comint-scroll-down)
     (define-key inferior-ess-mode-map (kbd "C-j") 'comint-next-input)
     (define-key inferior-ess-mode-map (kbd "C-k") 'comint-previous-input)))
 
