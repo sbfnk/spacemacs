@@ -17,17 +17,20 @@
     (evil-org :location local)
     evil-surround
     gnuplot
+    helm-bibtex
     htmlize
     mu4e
     ;; ob, org and org-agenda are installed by `org-plus-contrib'
     (ob :location built-in)
     (org :location built-in)
     (org-agenda :location built-in)
+    (org-contacts :location built-in)
     org-download
     ;; org-mime is installed by `org-plus-contrib'
     (org-mime :location built-in)
     org-pomodoro
     org-present
+    org-ref
     (org-projectile :toggle (configuration-layer/package-usedp 'projectile))
     (ox-twbs :toggle org-enable-bootstrap-support)
     ;; use a for of ox-gfm to fix index generation
@@ -250,6 +253,7 @@ Will work on both org-mode and any mode that accepts plain html."
         "N" 'widen
         "O" 'org-clock-out
         "q" 'org-clock-cancel
+        "r" 'org-ref-helm-insert-cite-link
         "R" 'org-refile
         "s" 'org-schedule
 
@@ -442,6 +446,9 @@ Headline^^            Visit entry^^               Filter^^                    Da
       (kbd "M-SPC") 'spacemacs/org-agenda-transient-state/body
       (kbd "s-M-SPC") 'spacemacs/org-agenda-transient-state/body)))
 
+(defun org/init-org-contacts ()
+  (use-package org-contacts))
+
 (defun org/init-org-download ()
   (use-package org-download
     :commands (org-download-enable
@@ -522,6 +529,10 @@ Headline^^            Visit entry^^               Filter^^                    Da
                 org-capture-templates))
       (org-projectile:per-repo)
       (setq org-projectile:per-repo-filename org-projectile-file))))
+
+(defun org/init-ref ()
+  (use-package org-ref
+    :defer t))
 
 (defun org/init-ox-twbs ()
   (spacemacs|use-package-add-hook org :post-config (require 'ox-twbs)))
