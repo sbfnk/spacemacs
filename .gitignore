@@ -58,3 +58,5 @@ private/
 # recent files
 recentf
 srecode-map.el
+
+org-caldav-backup.org
