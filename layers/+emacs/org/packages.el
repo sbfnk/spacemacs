@@ -23,6 +23,7 @@
     (ob :location built-in)
     (org :location built-in)
     (org-agenda :location built-in)
+    (org-contacts :location built-in)
     org-download
     ;; org-mime is installed by `org-plus-contrib'
     (org-mime :location built-in)
@@ -441,6 +442,9 @@ Headline^^            Visit entry^^               Filter^^                    Da
       (kbd "M-RET") 'org-agenda-show-and-scroll-up
       (kbd "M-SPC") 'spacemacs/org-agenda-transient-state/body
       (kbd "s-M-SPC") 'spacemacs/org-agenda-transient-state/body)))
+
+(defun org/init-org-contacts ()
+  (use-package org-contacts))
 
 (defun org/init-org-download ()
   (use-package org-download
