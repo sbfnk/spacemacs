@@ -14,6 +14,7 @@
         (mu4e :location site)
         mu4e-alert
         mu4e-maildirs-extension
+        mu4e-goodies
         org
         ))
 
@@ -37,6 +38,7 @@
        :bindings
        (kbd "C-j") 'mu4e-headers-next
        (kbd "C-k") 'mu4e-headers-prev
+       (kbd "A") 'mu4e-headers-mark-for-tag
        (kbd "J") (lambda ()
                    (interactive)
                    (mu4e-headers-mark-thread nil '(read))))
@@ -47,6 +49,7 @@
        :bindings
        (kbd "C-j") 'mu4e-view-headers-next
        (kbd "C-k") 'mu4e-view-headers-prev
+       (kbd "'") 'mu4e-goodies-detach-msg-view
        (kbd "J") (lambda ()
                    (interactive)
                     (mu4e-view-mark-thread '(read))))
