@@ -65,9 +65,15 @@
     ;; Follow Hadley Wickham's R style guide
     (setq ess-first-continued-statement-offset 2
           ess-continued-statement-offset 0
-          ess-expression-offset 2
+          ess-expression-offset 4
           ess-nuke-trailing-whitespace-p t
           ess-default-style 'DEFAULT)
+
+    (defun then_R_operator ()
+      "R - %>% operator or 'then' pipe operator"
+      (interactive)
+      (insert " %>% ") ; note the space before the first %
+      )
 
     (defun spacemacs/ess-start-repl ()
       "Start a REPL corresponding to the ess-language of the current buffer."
@@ -107,7 +113,12 @@
       )
     (define-key ess-mode-map (kbd "<s-return>") 'ess-eval-line)
     (define-key inferior-ess-mode-map (kbd "C-j") 'comint-next-input)
-    (define-key inferior-ess-mode-map (kbd "C-k") 'comint-previous-input)))
+    (define-key inferior-ess-mode-map (kbd "C-k") 'comint-previous-input)
+    (define-key inferior-ess-mode-map (kbd "M-p") 'comint-previous-matching-input-from-input)
+    (define-key inferior-ess-mode-map (kbd "M-n") 'comint-next-matching-input-from-input)
+    (define-key inferior-ess-mode-map (kbd "C-`") 'then_R_operator)
+    (define-key inferior-ess-mode-map (kbd "C-d") 'scroll-up-command)
+    ))
 
 (defun ess/init-ess-R-data-view ())
 
