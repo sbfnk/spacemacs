@@ -77,6 +77,10 @@
     :defer t
     :init (with-eval-after-load 'mu4e (mu4e-maildirs-extension-load))))
 
+(defun mu4e/init-mu4e-goodies ()
+  (use-package mu4e-goodies
+    :defer t))
+
 (defun mu4e/post-init-org ()
   ;; load org-mu4e when org is actually loaded
   (with-eval-after-load 'org (require 'org-mu4e nil 'noerror)))
