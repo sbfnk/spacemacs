@@ -624,10 +624,6 @@ Headline^^            Visit entry^^               Filter^^                    Da
       (add-hook 'org-present-mode-hook 'spacemacs//org-present-start)
       (add-hook 'org-present-mode-quit-hook 'spacemacs//org-present-end))))
 
-(defun org/init-org-ref ()
-  (use-package org-ref
-    :defer t))
-
 (defun org/init-org-projectile ()
   (use-package org-projectile
     :commands (org-projectile-location-for-project)
