@@ -1,6 +1,6 @@
 ;;; packages.el --- Haskell Layer packages File for Spacemacs
 ;;
-;; Copyright (c) 2012-2016 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2018 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
@@ -10,66 +10,164 @@
 ;;; License: GPLv3
 
 (setq haskell-packages
-  '(
-    cmm-mode
-    company
-    (company-cabal :toggle (configuration-layer/package-usedp 'company))
-    company-ghci
-    company-ghc
-    flycheck
-    (flycheck-haskell :toggle (configuration-layer/package-usedp 'flycheck))
-    ggtags
-    ghc
-    haskell-mode
-    haskell-snippets
-    helm-gtags
-    (helm-hoogle :toggle (configuration-layer/package-usedp 'helm))
-    hindent
-    hlint-refactor
-    intero
-    ))
+      '(
+        cmm-mode
+        company
+        (company-cabal :requires company)
+
+        ;; ghci completion backend
+        (company-ghci
+         :requires company
+         :toggle (eq haskell-completion-backend 'ghci))
+
+        ;; ghc-mod completion backend
+        (company-ghc
+         :requires company
+         :toggle (eq haskell-completion-backend 'ghc-mod))
+        (ghc :toggle (eq haskell-completion-backend 'ghc-mod))
+
+        ;; intero completion backend
+        (intero
+         :requires company
+         :toggle (eq haskell-completion-backend 'intero))
+
+        ;; dante completion backend
+        (dante
+         :requires company
+         :toggle (and (version<= "25" emacs-version)
+                      (eq haskell-completion-backend 'dante)))
+
+        flycheck
+        (flycheck-haskell :requires flycheck)
+        ggtags
+        haskell-mode
+        haskell-snippets
+        counsel-gtags
+        helm-gtags
+        (helm-hoogle :requires helm)
+        hindent
+        hlint-refactor
+        ))
 
 (defun haskell/init-cmm-mode ()
   (use-package cmm-mode
     :defer t))
 
-(defun haskell/post-init-company ()
-  (spacemacs|add-company-hook haskell-mode)
-  (spacemacs|add-company-hook haskell-cabal-mode)
-  (when (eq haskell-completion-backend 'intero)
-    (spacemacs|add-company-hook intero-repl-mode)))
+(defun haskell/post-init-company ())
 
 (defun haskell/init-company-cabal ()
   (use-package company-cabal
-    :if (configuration-layer/package-usedp 'company)
     :defer t
     :init
-    (push '(company-cabal)
-          company-backends-haskell-cabal-mode)))
+    (spacemacs|add-company-backends
+      :backends company-cabal
+      :modes haskell-cabal-mode)))
 
 (defun haskell/init-company-ghci ()
   (use-package company-ghci
-    :defer t))
+    :defer t
+    :init
+    (spacemacs|add-company-backends
+      :backends (company-ghci company-dabbrev-code company-yasnippet)
+      :modes haskell-mode)
+    (add-hook 'haskell-mode-hook 'interactive-haskell-mode)))
 
 (defun haskell/init-company-ghc ()
   (use-package company-ghc
     :defer t))
 
-(defun haskell/post-init-ggtags ()
-  (add-hook 'haskell-mode-local-vars-hook #'spacemacs/ggtags-mode-enable))
-
 (defun haskell/init-ghc ()
   (use-package ghc
-    :defer t))
+    :defer t
+    :init
+    (spacemacs|add-company-backends
+      :backends (company-ghc company-dabbrev-code company-yasnippet)
+      :modes haskell-mode)
+    (add-hook 'haskell-mode-hook 'ghc-init)
+    :config
+    (progn
+      (dolist (mode haskell-modes)
+        (spacemacs/declare-prefix-for-mode mode "mm" "haskell/ghc-mod")
+        (spacemacs/set-leader-keys-for-major-mode mode
+          "mt" 'ghc-insert-template-or-signature
+          "mu" 'ghc-initial-code-from-signature
+          "ma" 'ghc-auto
+          "mf" 'ghc-refine
+          "me" 'ghc-expand-th
+          "mn" 'ghc-goto-next-hole
+          "mp" 'ghc-goto-prev-hole
+          "m>" 'ghc-make-indent-deeper
+          "m<" 'ghc-make-indent-shallower
+          "hi" 'ghc-show-info
+          "ht" 'ghc-show-type))
+      (when (configuration-layer/package-used-p 'flycheck)
+        ;; remove overlays from ghc-check.el if flycheck is enabled
+        (set-face-attribute 'ghc-face-error nil :underline nil)
+        (set-face-attribute 'ghc-face-warn nil :underline nil)))))
 
 (defun haskell/init-intero ()
   (use-package intero
     :defer t
+    :init
+    (spacemacs|add-company-backends
+      :backends (company-intero company-dabbrev-code company-yasnippet)
+      :modes haskell-mode)
+    (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
+    (add-hook 'haskell-mode-hook 'intero-mode)
+    (add-to-list 'spacemacs-jump-handlers-haskell-mode 'intero-goto-definition)
     :config
     (progn
       (spacemacs|diminish intero-mode " λ" " \\")
       (advice-add 'intero-repl-load
-                  :around #'haskell-intero//preserve-focus))))
+                  :around #'haskell-intero//preserve-focus)
+
+      (dolist (mode haskell-modes)
+        (spacemacs/set-leader-keys-for-major-mode mode
+          "gb" 'xref-pop-marker-stack
+          "hi" 'intero-info
+          "ht" 'intero-type-at
+          "hT" 'haskell-intero/insert-type
+          "rs" 'intero-apply-suggestions
+          "sb" 'intero-repl-load))
+
+      (dolist (mode (cons 'haskell-cabal-mode haskell-modes))
+        (spacemacs/set-leader-keys-for-major-mode mode
+          "sc"  nil
+          "sS"  'haskell-intero/display-repl
+          "ss"  'haskell-intero/pop-to-repl))
+
+      (dolist (mode (append haskell-modes '(haskell-cabal-mode intero-repl-mode)))
+        (spacemacs/declare-prefix-for-mode mode "mi" "haskell/intero")
+        (spacemacs/set-leader-keys-for-major-mode mode
+          "ic"  'intero-cd
+          "id"  'intero-devel-reload
+          "ik"  'intero-destroy
+          "il"  'intero-list-buffers
+          "ir"  'intero-restart
+          "it"  'intero-targets))
+
+      (evil-define-key '(insert normal) intero-mode-map
+        (kbd "M-.") 'intero-goto-definition))))
+
+(defun haskell/init-dante ()
+  (use-package dante
+    :defer t
+    :init
+    (spacemacs|add-company-backends
+      :backends (dante-company company-dabbrev-code company-yasnippet)
+      :modes haskell-mode)
+    (add-hook 'haskell-mode-hook 'dante-mode)
+    (add-to-list 'spacemacs-jump-handlers 'xref-find-definitions)
+    :config
+    (progn
+      (dolist (mode haskell-modes)
+        (spacemacs/set-leader-keys-for-major-mode mode
+          "ht" 'dante-type-at
+          "hT" 'spacemacs-haskell//dante-insert-type
+          "hi" 'dante-info
+          "rs" 'dante-auto-fix
+          "se" 'dante-eval-block
+          "sr" 'dante-restart)))))
 
 (defun haskell/init-helm-hoogle ()
   (use-package helm-hoogle
@@ -79,26 +177,31 @@
       (spacemacs/set-leader-keys-for-major-mode mode "hf" 'helm-hoogle))))
 
 (defun haskell/post-init-flycheck ()
-  (spacemacs/add-flycheck-hook 'haskell-mode))
+  (spacemacs/enable-flycheck 'haskell-mode))
 
 (defun haskell/init-flycheck-haskell ()
   (use-package flycheck-haskell
     :commands flycheck-haskell-configure
     :init (add-hook 'flycheck-mode-hook 'flycheck-haskell-configure)))
 
+(defun haskell/post-init-ggtags ()
+  (add-hook 'haskell-mode-local-vars-hook #'spacemacs/ggtags-mode-enable))
+
 (defun haskell/init-haskell-mode ()
   (use-package haskell-mode
     :defer t
     :init
     (progn
-      (add-hook 'haskell-mode-local-vars-hook
-                #'spacemacs-haskell//setup-completion-backend)
-
       (defun spacemacs//force-haskell-mode-loading ()
         "Force `haskell-mode' loading when visiting cabal file."
         (require 'haskell-mode))
       (add-hook 'haskell-cabal-mode-hook
                 'spacemacs//force-haskell-mode-loading)
+
+      ;; Haskell cabal files interact badly with electric-indent-mode
+      ;; note: we cannot add this hook in :config, since haskell-mode might
+      ;; only be loaded after cabal-mode hooks are already run (see add-hook above)
+      (add-hook 'haskell-cabal-mode-hook #'spacemacs-haskell//disable-electric-indent)
 
       (setq
        ;; Use notify.el (if you have it installed) at the end of running
@@ -114,12 +217,6 @@
        haskell-stylish-on-save nil))
     :config
     (progn
-      ;; Haskell main editing mode key bindings.
-      (defun spacemacs/init-haskell-mode ()
-        ;; use only internal indentation system from haskell
-        (if (fboundp 'electric-indent-local-mode)
-            (electric-indent-local-mode -1)))
-
       (defun spacemacs/haskell-interactive-bring ()
         "Bring up the interactive mode for this session without
          switching to it."
@@ -129,7 +226,7 @@
           (display-buffer buffer)))
 
       ;; hooks
-      (add-hook 'haskell-mode-hook 'spacemacs/init-haskell-mode)
+      (add-hook 'haskell-mode-hook #'spacemacs-haskell//disable-electric-indent)
 
       ;; prefixes
       (dolist (mode haskell-modes)
@@ -141,6 +238,7 @@
         (spacemacs/declare-prefix-for-mode mode "mr" "haskell/refactor"))
       (spacemacs/declare-prefix-for-mode 'haskell-interactive-mode "ms" "haskell/repl")
       (spacemacs/declare-prefix-for-mode 'haskell-cabal-mode "ms" "haskell/repl")
+      (spacemacs/declare-prefix-for-mode 'intero-repl-mode "ms" "haskell/repl")
 
       ;; key bindings
       (defun spacemacs/haskell-process-do-type-on-prev-line ()
@@ -154,8 +252,8 @@
 
           "sb"  'haskell-process-load-file
           "sc"  'haskell-interactive-mode-clear
-          "ss"  'spacemacs/haskell-interactive-bring
-          "sS"  'haskell-interactive-switch
+          "sS"  'spacemacs/haskell-interactive-bring
+          "ss"  'haskell-interactive-switch
 
           "ca"  'haskell-process-cabal
           "cb"  'haskell-process-cabal-build
@@ -180,7 +278,9 @@
           "dp"  'haskell-debug/previous
           "dr"  'haskell-debug/refresh
           "ds"  'haskell-debug/step
-          "dt"  'haskell-debug/trace))
+          "dt"  'haskell-debug/trace
+
+          "ri"  'spacemacs/haskell-format-imports))
 
       (evilified-state-evilify haskell-debug-mode haskell-debug-mode-map
         "RET" 'haskell-debug/select
@@ -188,11 +288,10 @@
         "b" 'haskell-debug/break-on-function
         "c" 'haskell-debug/continue
         "d" 'haskell-debug/delete
-        "n" 'haskell-debug/next
-        "N" 'haskell-debug/previous
-        "p" 'haskell-debug/previous
+        "i" 'haskell-debug/step
+        "s" 'haskell-debug/next
+        "S" 'haskell-debug/previous
         "r" 'haskell-debug/refresh
-        "s" 'haskell-debug/step
         "t" 'haskell-debug/trace)
 
       ;; configure C-c C-l so it doesn't throw any errors
@@ -200,7 +299,9 @@
 
       ;; Switch back to editor from REPL
       (spacemacs/set-leader-keys-for-major-mode 'haskell-interactive-mode
-        "sS"  'haskell-interactive-switch-back)
+        "ss"  'haskell-interactive-switch-back)
+      (spacemacs/set-leader-keys-for-major-mode 'intero-repl-mode
+        "ss"  'intero-repl-switch-back)
 
       ;; Compile
       (spacemacs/set-leader-keys-for-major-mode 'haskell-cabal
@@ -218,8 +319,8 @@
         "n"   'haskell-cabal-next-subsection
         "p"   'haskell-cabal-previous-subsection
         "sc"  'haskell-interactive-mode-clear
-        "ss"  'spacemacs/haskell-interactive-bring
-        "sS"  'haskell-interactive-switch
+        "sS"  'spacemacs/haskell-interactive-bring
+        "ss"  'haskell-interactive-switch
         "N"   'haskell-cabal-next-section
         "P"   'haskell-cabal-previous-section
         "f"   'haskell-cabal-find-or-create-source-file)
@@ -252,8 +353,9 @@
 (defun haskell/init-haskell-snippets ()
   ;; manually load the package since the current implementation is not lazy
   ;; loading friendly (funny coming from the haskell mode :-))
-  (setq haskell-snippets-dir (spacemacs//get-package-directory
-                              'haskell-snippets))
+  (setq haskell-snippets-dir
+        (configuration-layer/get-elpa-package-install-directory
+         'haskell-snippets))
 
   (defun haskell-snippets-initialize ()
     (let ((snip-dir (expand-file-name "snippets" haskell-snippets-dir)))
@@ -262,21 +364,24 @@
 
   (with-eval-after-load 'yasnippet (haskell-snippets-initialize)))
 
+(defun haskell/post-init-counsel-gtags ()
+  (spacemacs/counsel-gtags-define-keys-for-mode 'haskell-mode))
+
 (defun haskell/post-init-helm-gtags ()
   (spacemacs/helm-gtags-define-keys-for-mode 'haskell-mode))
+
 
 ;; doesn't support literate-haskell-mode :(
 (defun haskell/init-hindent ()
   (use-package hindent
     :defer t
-    :if (stringp haskell-enable-hindent-style)
+    :if haskell-enable-hindent
     :init
     (add-hook 'haskell-mode-hook #'hindent-mode)
     :config
     (progn
-      (setq hindent-style haskell-enable-hindent-style)
       (spacemacs/set-leader-keys-for-major-mode 'haskell-mode
-        "f" 'hindent-reformat-decl))))
+        "f" 'hindent-reformat-decl-or-fill))))
 
 (defun haskell/init-hlint-refactor ()
   (use-package hlint-refactor

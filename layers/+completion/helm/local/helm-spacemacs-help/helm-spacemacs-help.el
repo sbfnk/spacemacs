@@ -30,7 +30,6 @@
 (require 'ht)
 (require 'helm)
 (require 'helm-command)
-(require 'helm-org)
 (require 'core-configuration-layer)
 
 (defvar helm-spacemacs--initialized nil
@@ -44,13 +43,8 @@
 
 (defun helm-spacemacs-help//init (&optional arg)
   (when (or arg (null helm-spacemacs--initialized))
-    (let ((configuration-layer--load-packages-files t)
-          (configuration-layer--package-properties-read-onlyp t)
-          (configuration-layer--inhibit-warnings t))
-      (configuration-layer/discover-layers)
-      (configuration-layer/declare-layers (configuration-layer/get-layers-list))
-      (configuration-layer/make-all-packages)
-      (setq helm-spacemacs--initialized t))))
+    (configuration-layer/make-all-packages)
+    (setq helm-spacemacs--initialized t)))
 
 ;;;###autoload
 (defun helm-spacemacs-help (arg)
@@ -63,8 +57,7 @@
                    ,(helm-spacemacs-help//layer-source)
                    ,(helm-spacemacs-help//package-source)
                    ,(helm-spacemacs-help//dotspacemacs-source)
-                   ,(helm-spacemacs-help//toggle-source)
-                   ,(helm-spacemacs-help//faq-source))))
+                   ,(helm-spacemacs-help//toggle-source))))
 
 ;;;###autoload
 (defun helm-spacemacs-help-dotspacemacs ()
@@ -107,14 +100,6 @@
   (helm :buffer "*helm: spacemacs*"
         :sources `(,(helm-spacemacs-help//toggle-source))))
 
-;;;###autoload
-(defun helm-spacemacs-help-faq ()
-  "Helm session to search for the FAQ."
-  (interactive)
-  (helm-spacemacs-help-mode)
-  (helm :buffer "*helm: spacemacs*"
-        :sources `(,(helm-spacemacs-help//faq-source))))
-
 (defun helm-spacemacs-help//documentation-source ()
   "Construct the helm source for the documentation section."
   (helm-build-sync-source "Spacemacs Documentation"
@@ -143,6 +128,8 @@
     ;; give each document an appropriate title
     (mapcar (lambda (r)
               (cond
+               ((string-equal r "BEGINNERS_TUTORIAL.org")
+                `("Beginners tutorial" . ,r))
                ((string-equal r "CONTRIBUTING.org")
                 `("How to contribute to Spacemacs" . ,r))
                ((string-equal r "CONVENTIONS.org")
@@ -194,6 +181,10 @@
                 . helm-spacemacs-help//layer-action-open-packages)
                ("Open config.el"
                 . helm-spacemacs-help//layer-action-open-config)
+               ("Open funcs.el"
+                . helm-spacemacs-help//layer-action-open-funcs)
+               ("Open layers.el"
+                . helm-spacemacs-help//layer-action-open-layers)
                ("Install Layer"
                 . helm-spacemacs-help//layer-action-install-layer)
                ("Open README.org (for editing)"
@@ -219,7 +210,7 @@
     (action . (("Go to configuration function"
                 . helm-spacemacs-help//package-action-goto-config-func)
                ("Describe"
-                . helm-spacemacs-help//package-action-decribe)))))
+                . helm-spacemacs-help//package-action-describe)))))
 
 (defun helm-spacemacs-help//package-candidates ()
   "Return the sorted candidates for package source."
@@ -228,7 +219,7 @@
       (let* ((pkg (configuration-layer/get-package pkg-name))
              (owner (cfgl-package-get-safe-owner pkg))
              ;; the notion of owner does not make sense if the layer is not used
-             (init-type (if (configuration-layer/layer-usedp owner)
+             (init-type (if (configuration-layer/layer-used-p owner)
                             "owner" "init")))
         (when owner
           (push (format "%s (%s: %S layer)"
@@ -331,7 +322,15 @@
   "Open the `config.el' file of the passed CANDIDATE."
   (helm-spacemacs-help//layer-action-open-file "config.el" candidate))
 
-(defun helm-spacemacs-help//package-action-decribe (candidate)
+(defun helm-spacemacs-help//layer-action-open-funcs (candidate)
+  "Open the `funcs.el' file of the passed CANDIDATE."
+  (helm-spacemacs-help//layer-action-open-file "funcs.el" candidate))
+
+(defun helm-spacemacs-help//layer-action-open-layers (candidate)
+  "Open the `layers.el' file of the passed CANDIDATE."
+  (helm-spacemacs-help//layer-action-open-file "layers.el" candidate))
+
+(defun helm-spacemacs-help//package-action-describe (candidate)
   "Describe the passed package using Spacemacs describe function."
   (save-match-data
     (string-match "^\\(.+\\)\s(\\(.+\\) layer)$" candidate)
@@ -368,47 +367,6 @@
   ;; try to exclude comments
   (re-search-forward (format "^[a-z\s\\(\\-]*%s" candidate))
   (beginning-of-line))
-
-(defvar helm-spacemacs-help--faq-filename
-  (concat spacemacs-docs-directory "FAQ.org")
-  "Location of the FAQ file.")
-
-(defun helm-spacemacs-help//faq-source ()
-  "Construct the helm source for the FAQ."
-  `((name . "FAQ")
-    (candidates . ,(helm-spacemacs-help//faq-candidates))
-    (candidate-number-limit)
-    (action . (("Go to question" . helm-spacemacs-help//faq-goto-marker)))))
-
-(defun helm-spacemacs-help//faq-candidate (cand)
-  (let ((str (substring-no-properties (car cand))))
-    (when (string-match "\\`.*/\\([^/]*\\)/\\(.*\\)\\'" str)
-      (cons (concat (propertize
-                     (match-string 1 str)
-                     'face 'font-lock-type-face)
-                    ": " (match-string 2 str))
-            (cdr cand)))))
-
-(defun helm-spacemacs-help//faq-candidates ()
-  (let* ((helm-org-format-outline-path nil)
-         (cands (helm-org-get-candidates (list helm-spacemacs-help--faq-filename)))
-         section result)
-    (dolist (c cands)
-      (let ((str (substring-no-properties (car c))))
-        (when (string-match "\\`\\* \\(.*\\)\\'" str)
-          (setq section (match-string 1 str)))
-        (when (string-match "\\`\\*\\* \\(.*\\)\\'" str)
-          (push (cons (concat (propertize section 'face 'font-lock-type-face)
-                              ": " (match-string 1 str))
-                      (cdr c))
-                result))))
-    result))
-
-(defun helm-spacemacs-help//faq-goto-marker (marker)
-  (find-file helm-spacemacs-help--faq-filename)
-  (goto-char marker)
-  (org-show-context)
-  (org-show-entry))
 
 (provide 'helm-spacemacs-help)
 

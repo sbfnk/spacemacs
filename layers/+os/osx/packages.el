@@ -1,6 +1,6 @@
 ;;; config.el --- OSX Layer packages File for Spacemacs
 ;;
-;; Copyright (c) 2012-2016 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2018 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
@@ -16,7 +16,9 @@
         launchctl
         (osx-dictionary :toggle osx-use-dictionary-app)
         osx-trash
-        pbcopy
+        ;; disabled because it introduces input latency with some
+        ;; actions when using emacs -daemon and opening a GUI client
+        ;; pbcopy
         reveal-in-osx-finder
         term
         ))
@@ -103,10 +105,15 @@
              (not (boundp 'mac-system-move-file-to-trash-use-finder)))
     :init (osx-trash-setup)))
 
-(defun osx/init-pbcopy ()
-  (use-package pbcopy
-    :if (and (spacemacs/system-is-mac) (not (display-graphic-p)))
-    :init (turn-on-pbcopy)))
+;; TODO: find a way to enable it in terminal with a dumped Spacemacs
+;; if this package is activate while dumping it makes some action lag
+;; like 'dd' to delete a line etc...
+;; (defun osx/init-pbcopy ()
+;;   (use-package pbcopy
+;;     :if (and (spacemacs/system-is-mac)
+;;              (not (display-graphic-p))
+;;              (not (spacemacs-is-dumping-p)))
+;;     :init (turn-on-pbcopy)))
 
 (defun osx/init-reveal-in-osx-finder ()
   (use-package reveal-in-osx-finder

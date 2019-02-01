@@ -1,6 +1,6 @@
 ;;; packages.el --- Agda2 Layer packages File for Spacemacs
 ;;
-;; Copyright (c) 2012-2016 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2018 Sylvain Benner & Contributors
 ;;
 ;; Author: Oliver Charles <ollie@ocharles.org.uk>
 ;; URL: https://github.com/syl20bnr/spacemacs
@@ -10,13 +10,14 @@
 ;;; License: GPLv3
 
 (setq agda-packages
-      '((agda :location local)
+      '(
+        (agda :location local)
         company
-        golden-ratio))
+        golden-ratio
+        ))
 
 (defun agda/post-init-company ()
-  (spacemacs|add-company-hook agda2-mode)
-  (push 'company-capf company-backends-agda2-mode))
+  (spacemacs|add-company-backends :backends company-capf :modes agda2-mode))
 
 (defun agda/init-agda ()
   (if (and (eq 'use-helper agda-mode-path)
@@ -83,7 +84,7 @@
           "xq"  'agda2-quit
           "xr"  'agda2-restart)))))
 
-(defun idris/pre-init-golden-ratio ()
+(defun agda/pre-init-golden-ratio ()
   (spacemacs|use-package-add-hook golden-ratio
     :post-config
     (add-to-list 'golden-ratio-exclude-buffer-names

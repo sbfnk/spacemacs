@@ -1,4 +1,13 @@
-;; funcs.el file for vinegar contribution layer
+;;; config.el --- Vinegar Layer Functions File for Spacemacs
+;;
+;; Copyright (c) 2012-2018 Sylvain Benner & Contributors
+;;
+;; Author: Sylvain Benner <sylvain.benner@gmail.com>
+;; URL: https://github.com/syl20bnr/spacemacs
+;;
+;; This file is not part of GNU Emacs.
+;;
+;;; License: GPLv3
 
 (defun vinegar/dotfiles-toggle ()
   "Show/hide dot-files"
@@ -95,7 +104,7 @@
   (dired-omit-mode t)
 
   ;; allow selection with mouse
-  (make-local-variable 'mouse-1-click-follows-link) 
+  (make-local-variable 'mouse-1-click-follows-link)
   (setq mouse-1-click-follows-link nil)
 
   (local-set-key (kbd  "<mouse-1>") 'vinegar/dired-mouse-click)

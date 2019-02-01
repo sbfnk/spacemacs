@@ -42,13 +42,8 @@
 
 (defun ivy-spacemacs-help//init (&optional arg)
   (when (or arg (null ivy-spacemacs--initialized))
-    (let ((configuration-layer--load-packages-files t)
-          (configuration-layer--package-properties-read-onlyp t)
-          (configuration-layer--inhibit-warnings t))
-      (configuration-layer/discover-layers)
-      (configuration-layer/declare-layers (configuration-layer/get-layers-list))
-      (configuration-layer/make-all-packages)
-      (setq ivy-spacemacs--initialized t))))
+    (configuration-layer/make-all-packages)
+    (setq ivy-spacemacs--initialized t)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Docs
@@ -72,6 +67,8 @@
     ;; give each document an appropriate title
     (mapcar (lambda (r)
               (cond
+               ((string-equal r "BEGINNERS_TUTORIAL.org")
+                `("Beginners tutorial" . ,r))
                ((string-equal r "CONTRIBUTING.org")
                 `("How to contribute to Spacemacs" . ,r))
                ((string-equal r "CONVENTIONS.org")
@@ -148,7 +145,7 @@
 
 (defun ivy-spacemacs-help//layer-action-add-layer (candidate)
   "Adds layer to dotspacemacs file and reloads configuration"
-  (if (configuration-layer/layer-usedp (intern candidate))
+  (if (configuration-layer/layer-used-p (intern candidate))
       (message "Layer already added.")
     (let ((dotspacemacs   (find-file-noselect (dotspacemacs/location))))
       (with-current-buffer dotspacemacs
@@ -177,6 +174,14 @@
   "Open the `packages.el' file of the passed CANDIDATE."
   (ivy-spacemacs-help//layer-action-open-file "packages.el" candidate))
 
+(defun ivy-spacemacs-help//layer-action-open-funcs (candidate)
+  "Open the `funcs.el' file of the passed CANDIDATE."
+  (ivy-spacemacs-help//layer-action-open-file "funcs.el" candidate))
+
+(defun ivy-spacemacs-help//layer-action-open-layers (candidate)
+  "Open the `layers.el' file of the passed CANDIDATE."
+  (ivy-spacemacs-help//layer-action-open-file "layers.el" candidate))
+
 ;;;###autoload
 (defun ivy-spacemacs-help-layers ()
   (interactive)
@@ -193,6 +198,8 @@
    ("e" ivy-spacemacs-help//layer-action-open-readme-edit "open readme for editing")
    ("c" ivy-spacemacs-help//layer-action-open-config "open config.el")
    ("p" ivy-spacemacs-help//layer-action-open-packages "open packages.el")
+   ("f" ivy-spacemacs-help//layer-action-open-funcs "open funcs.el")
+   ("l" ivy-spacemacs-help//layer-action-open-layers "open layers.el")
    ("r" ivy-spacemacs-help//layer-action-open-readme "open readme")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -233,7 +240,7 @@
                           layer
                           (propertize "no packages"
                                       'face 'warning))
-                  layer
+                  (symbol-name layer)
                   nil)
             result))
     (sort result (lambda (a b) (string< (car a) (car b))))))
@@ -265,7 +272,7 @@
    (ivy-spacemacs-help//layer-action-get-directory (cadr args))))
 
 (defun ivy-spacemacs-help//help-action-open-config (args)
-  "Open the `packages.el' file of the passed CANDIDATE."
+  "Open the `config.el' file of the passed CANDIDATE."
   (ivy-spacemacs-help//layer-action-open-file "config.el" (cadr args)))
 
 (defun ivy-spacemacs-help//help-action-open-packages (args)
@@ -282,7 +289,7 @@
 
 (defun ivy-spacemacs-help//help-action-add-layer (args)
   "Adds layer to dotspacemacs file and reloads configuration"
-  (if (configuration-layer/layer-usedp (intern (cadr args)))
+  (if (configuration-layer/layer-used-p (intern (cadr args)))
       (message "Layer already added.")
     (let ((dotspacemacs   (find-file-noselect (dotspacemacs/location))))
       (with-current-buffer dotspacemacs

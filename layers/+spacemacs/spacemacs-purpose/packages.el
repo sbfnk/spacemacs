@@ -1,6 +1,6 @@
 ;;; packages.el --- Spacemacs Purpose Layer packages File for Spacemacs
 ;;
-;; Copyright (c) 2012-2016 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2018 Sylvain Benner & Contributors
 ;;
 ;; Author: Bar Magal
 ;; URL: https://github.com/syl20bnr/spacemacs
@@ -11,12 +11,12 @@
 
 (setq spacemacs-purpose-packages
       '(eyebrowse
-        (helm-purpose :toggle (configuration-layer/layer-usedp 'helm))
-        (ivy-purpose :toggle (configuration-layer/layer-usedp 'ivy))
+        (helm-purpose :requires helm)
+        (ivy-purpose :requires ivy)
         popwin
         (spacemacs-purpose-popwin
          :location local
-         :toggle (configuration-layer/package-usedp 'popwin))
+         :requires popwin)
         window-purpose))
 
 (defun spacemacs-purpose/pre-init-eyebrowse ()
@@ -29,6 +29,7 @@
 
 (defun spacemacs-purpose/init-helm-purpose ()
   (use-package helm-purpose
+    :defer t
     :init
     (progn
       (setq purpose-preferred-prompt 'helm)
@@ -81,22 +82,37 @@
                              do (purpose-set-window-purpose-dedicated-p
                                  window t))))
       (add-hook 'purpose-mode-hook #'spacemacs/window-purpose-sync-popwin)
-      (spacemacs/window-purpose-sync-popwin))))
+      (with-eval-after-load 'window-purpose
+        (spacemacs/window-purpose-sync-popwin)
+        ;; can't have both `purpose-mode' and `popwin-mode' active at the same
+        ;; time (see https://github.com/syl20bnr/spacemacs/issues/9593), but we
+        ;; use `popwin' for its configuration so we can't just exclude it, so
+        ;; current solution is to disable `popwin-mode' (which is enabled in
+        ;; popwin's :config block)
+        (popwin-mode -1)))))
 
-(defun spacemacs-purpose/init-spacemacs-purpose-popwin ()
-  (use-package spacemacs-purpose-popwin
-    :config
+(defun spacemacs-purpose/pre-init-spacemacs-purpose-popwin ()
+  (spacemacs|use-package-add-hook window-purpose
+    :post-config
     (progn
-      (pupo-mode)
       ;; override popwin commands with pupo commands
       (spacemacs/set-leader-keys
         "wpp" #'pupo/close-window
-        "wpP" #'pupo/close-all-windows))))
+        "wpP" #'pupo/close-all-windows)
+      (pupo-mode))))
+(defun spacemacs-purpose/init-spacemacs-purpose-popwin ()
+  (use-package spacemacs-purpose-popwin :commands pupo-mode))
 
 (defun spacemacs-purpose/init-window-purpose ()
   (use-package window-purpose
+    :defer (spacemacs/defer)
     :init
     (progn
+      (add-hook 'emacs-startup-hook
+                (lambda ()
+                  (spacemacs|add-transient-hook window-configuration-change-hook
+                    (lambda () (require 'window-purpose))
+                    lazy-load-window-purpose)))
       ;; 'r' is for "puRpose" ('w', 'p' are crowded, 'W', 'P' aren't
       ;; comfortable)
       (spacemacs/set-leader-keys
@@ -105,10 +121,29 @@
         "rd" 'purpose-toggle-window-purpose-dedicated
         "rD" 'purpose-delete-non-dedicated-windows
         "rp" 'purpose-switch-buffer-with-some-purpose
-        "rP" 'purpose-set-window-purpose)
-      (purpose-mode))
+        "rP" 'purpose-set-window-purpose))
     :config
     (progn
+      (purpose-mode)
+      ;; change `switch-to-buffer' display preferences according to
+      ;; `dotspacemacs-switch-to-buffer-prefers-purpose'. This affects actions
+      ;; like `spacemacs/alternate-buffer', and opening buffers from Dired
+      (setcdr (assq 'switch-to-buffer purpose-action-sequences)
+              (if dotspacemacs-switch-to-buffer-prefers-purpose
+                  '(purpose-display-reuse-window-buffer
+                    purpose-display-reuse-window-purpose
+                    purpose-display-maybe-same-window
+                    purpose-display-maybe-other-window
+                    purpose-display-maybe-other-frame
+                    purpose-display-maybe-pop-up-window
+                    purpose-display-maybe-pop-up-frame)
+                '(purpose-display-maybe-same-window
+                  purpose-display-reuse-window-buffer
+                  purpose-display-reuse-window-purpose
+                  purpose-display-maybe-other-window
+                  purpose-display-maybe-other-frame
+                  purpose-display-maybe-pop-up-window
+                  purpose-display-maybe-pop-up-frame)))
       ;; overriding `purpose-mode-map' with empty keymap, so it doesn't conflict
       ;; with original `C-x C-f', `C-x b', etc. and `semantic' key bindings.
       (setcdr purpose-mode-map nil)

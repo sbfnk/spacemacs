@@ -1,11 +1,13 @@
 auto-save-list/
 elpa/
 export/
+!/core/tools/export/
 ac-comphist.dat
 eproject.lst
 .smex-items
 \#*
 .places
+.directory
 .cache
 /eww-bookmarks
 eshell/history
@@ -13,7 +15,8 @@ eshell/history
 .emacs.desktop.lock
 eshell/alias
 eshell/lastdir
-/url/cookies
+forge-database.sqlite
+url/*
 my-org/
 org-files/
 semanticdb/
@@ -44,18 +47,18 @@ python-*-docs-html
 /session.*
 /srecode-map.el
 /recentf
+.mc-lists.el
+nov-places
+workspace
+eclipse.jdt.ls
+.trello
 
 # Private directory
 private/
 !private/README.md
 !private/snippets/README.md
+!private/templates/README.md
 !private/local/README.md
 /games/
-
-# init.el swap file
-.init.el.swp
-# recent files
-recentf
-srecode-map.el
-
-
+/doc/COMMUNITY.org
+/doc/CONTRIBUTING.org

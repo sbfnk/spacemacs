@@ -1,6 +1,6 @@
 ;;; funcs.el --- Spacemacs Purpose Layer functions File
 ;;
-;; Copyright (c) 2012-2016 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2018 Sylvain Benner & Contributors
 ;;
 ;; Author: Bar Magal
 ;; URL: https://github.com/syl20bnr/spacemacs
@@ -18,6 +18,7 @@ Set `eyebrowse-new-workspace' value depending on the state of `purpose-mode'."
   (defvar spacemacs--window-purpose-eyebrowse-new-workspace
     eyebrowse-new-workspace
     "Internal backup of `eyebrowse-new-workspace'.")
+  (require 'window-purpose)
   (if purpose-mode
       (setq eyebrowse-new-workspace #'spacemacs//window-purpose-new-workspace)
     (setq eyebrowse-new-workspace
@@ -48,6 +49,7 @@ windows correctly."
 (defun spacemacs/window-purpose-sync-popwin ()
   "Synchronize window-purpose layer with popwin.
 Enable or disable advices to popwin, according to the state of `purpose-mode'."
+  (require 'window-purpose)
   (if purpose-mode
       (progn
         (ad-enable-advice 'popwin:create-popup-window
