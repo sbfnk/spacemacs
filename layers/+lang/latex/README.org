@@ -2,25 +2,26 @@
 
 [[file:img/latex.png]]
 
-* Table of Contents                                         :TOC_4_gh:noexport:
- - [[#description][Description]]
-   - [[#features][Features]]
-   - [[#bibtex][BibTeX]]
- - [[#install][Install]]
-   - [[#layer][Layer]]
-   - [[#auto-completion][Auto-completion]]
-   - [[#previewing][Previewing]]
-   - [[#build-command][Build command]]
-   - [[#auto-fill][Auto-fill]]
-   - [[#folding][Folding]]
- - [[#keybindings][Keybindings]]
-   - [[#folding][Folding]]
-   - [[#reftex][RefTeX]]
+* Table of Contents                     :TOC_4_gh:noexport:
+- [[#description][Description]]
+  - [[#features][Features:]]
+  - [[#bibtex][BibTeX]]
+- [[#install][Install]]
+  - [[#layer][Layer]]
+  - [[#auto-completion][Auto-completion]]
+  - [[#previewing][Previewing]]
+  - [[#build-command][Build command]]
+  - [[#auto-fill][Auto-fill]]
+  - [[#folding][Folding]]
+  - [[#magic-latex-buffer][Magic latex buffer]]
+- [[#key-bindings][Key bindings]]
+  - [[#folding-1][Folding]]
+  - [[#reftex][RefTeX]]
 
 * Description
 This layer adds support for LaTeX files with [[https://savannah.gnu.org/projects/auctex/][AucTeX]].
 
-** Features
+** Features:
 - Auto-build with [[https://github.com/tom-tan/auctex-latexmk/][auctex-latexmk]]
 - Auto-completion with [[https://github.com/alexeyr/company-auctex][company-auctex]]
 - Tags navigation on ~%~ with [[https://github.com/redguardtoo/evil-matchit][evil-matchit]]
@@ -28,7 +29,7 @@ This layer adds support for LaTeX files with [[https://savannah.gnu.org/projects
 
 ** BibTeX
 For more extensive support of BibTeX files than RefTeX provides, have a look at
-the [[../bibtex][BibTeX layer]].
+the [[https://github.com/syl20bnr/spacemacs/blob/develop/layers/%2Blang/bibtex/README.org][BibTeX layer]].
 
 * Install
 ** Layer
@@ -42,25 +43,24 @@ Add the layer =auto-completion= to the variable
 
 ** Previewing
 To perform full-document previews (that is, aside from the inline previewing
-under ~SPC m p~), add the following to your =.spacemacs=
-under =dotspacemacs/user-config=:
+under ~SPC m p~), add the following to your =.spacemacs= under
+=dotspacemacs/user-config=:
 
 #+BEGIN_SRC emacs-lisp
   (add-hook 'doc-view-mode-hook 'auto-revert-mode)
 #+END_SRC
 
-Then when you open up a compiled PDF, the preview will update automatically
-when you recompile.
+Then when you open up a compiled PDF, the preview will update automatically when
+you recompile.
 
 ** Build command
 A build command can be specified via the layer variable =latex-build-command=.
 
-If =LatexMk= is specified, the appropriate =LatexMk= configuration
-will be applied. (the default on systems with =latexmk= in the path)
-This variable can be set to any of the entities in =TeX-command-list=,
-including any custom entries you may have added there. To use the
-regular =AucTeX= command set =latex-build-command= to =LaTeX= as shown
-below.
+If =LatexMk= is specified, the appropriate =LatexMk= configuration will be
+applied. (the default on systems with =latexmk= in the path) This variable can
+be set to any of the entities in =TeX-command-list=, including any custom
+entries you may have added there. To use the regular =AucTeX= command set
+=latex-build-command= to =LaTeX= as shown below.
 
 #+BEGIN_SRC emacs-lisp
   dotspacemacs-configuration-layers '(
@@ -87,9 +87,31 @@ is nil.
     (latex :variables latex-enable-folding t))
 #+END_SRC
 
-* Keybindings
+** Magic latex buffer
+To enable “magic” symbols in latex buffers, set the variable
+=latex-enable-magic= to =t=.
 
-| Key Binding   | Description                                |
+#+BEGIN_SRC emacs-lisp
+  dotspacemacs-configuration-layers '(
+    (latex :variables latex-enable-magic t))
+#+END_SRC
+
+The precise effect of this feature can be modified by adjusting the following
+variables:
+- =magic-latex-enable-block-highlight=: show font properties like =\large=
+  (default =t=).
+- =magic-latex-enable-block-align=: reflect block alignment such as =\center=
+  (default =nil=).
+- =magic-latex-enable-pretty-symbols=: substitute symbols in place of code, e.g.
+  greek letters (default =t=).
+- =magic-latex-enable-suscript=: show subscripts and superscripts (default =t=).
+- =magic-latex-enable-inline-image=: show images inline (default =nil=).
+
+By default, the underlying latex code is echoed in the echo area.
+
+* Key bindings
+
+| Key binding   | Description                                |
 |---------------+--------------------------------------------|
 | ~SPC m -~     | recenter output buffer                     |
 | ~SPC m ​,​~     | TeX command on master file                 |
@@ -138,7 +160,7 @@ is nil.
 ** Folding
 Available only when =latex-enable-folding= is non nil.
 
-| Key Binding | Description          |
+| Key binding | Description          |
 |-------------+----------------------|
 | ~SPC m z =~ | fold TeX math        |
 | ~SPC m z b~ | fold TeX buffer      |
@@ -148,7 +170,7 @@ Available only when =latex-enable-folding= is non nil.
 
 ** RefTeX
 
-| Key Binding   | Description                           |
+| Key binding   | Description                           |
 |---------------+---------------------------------------|
 | ~SPC m r c~   | reftex-citation                       |
 | ~SPC m r g~   | reftex-grep-document                  |

@@ -6,6 +6,12 @@
 
 (require 'window-purpose)
 
+(defcustom pupo-split-active-window nil
+  "Non-nil if Pupo splits the active window.
+Nil if Pupo splits the entire frame."
+  :type '(boolean)
+  :group 'pupo)
+
 (defconst pupo--direction-to-purpose '((left . popl)
                                        (right . popr)
                                        (top . popt)
@@ -13,7 +19,7 @@
   "Mapping of popwin positions to purposes.")
 
 (defconst pupo--purposes
-  (loop for (direction . purpose) in pupo--direction-to-purpose collect purpose)
+  (cl-loop for (direction . purpose) in pupo--direction-to-purpose collect purpose)
   "List of purposes used to present popwin positions.")
 
 (defvar pupo--windows nil
@@ -46,8 +52,10 @@ width or height depending on POSITION."
                  ('top 'above)
                  ('bottom 'below))))
     (lambda (buffer alist)
-      (let ((window (ignore-errors
-                      (split-window (frame-root-window) size side))))
+      (let* ((main-window (if pupo-split-active-window
+                              (selected-window)
+                            (frame-root-window)))
+             (window (ignore-errors (split-window main-window size side))))
         (when window
           (purpose-change-buffer buffer window 'window alist))))))
 
@@ -169,7 +177,7 @@ This command can be used repeatedly to close all popup windows."
 Return a `purpose-conf' object.
 Popwin's settings are taken from `popwin:special-display-config'."
   (let (mode-purposes name-purposes regexp-purposes)
-    (loop for config-entry in popwin:special-display-config
+    (cl-loop for config-entry in popwin:special-display-config
           for (pattern . settings) = (popwin:listify config-entry)
           do
           (push (cons pattern
@@ -177,8 +185,7 @@ Popwin's settings are taken from `popwin:special-display-config'."
                 (cond ((symbolp pattern) mode-purposes)
                       ((plist-get settings :regexp) regexp-purposes)
                       (t name-purposes))))
-    (purpose-conf "pupo"
-                  :mode-purposes mode-purposes
+    (purpose-conf :mode-purposes mode-purposes
                   :name-purposes name-purposes
                   :regexp-purposes regexp-purposes)))
 
@@ -218,12 +225,12 @@ The windows were saved in `pupo/before-popwin-create'.
 Note that the windows themselves aren't restored, but some internal
 variables are updated instead."
   (setq pupo--windows nil)
-  (loop for buffer in pupo--saved-buffers
+  (cl-loop for buffer in pupo--saved-buffers
         do (setq pupo--windows
               (append pupo--windows
                       (get-buffer-window-list buffer))))
   (setq pupo--auto-windows nil)
-  (loop for buffer in pupo--saved-auto-buffers
+  (cl-loop for buffer in pupo--saved-auto-buffers
         do (setq pupo--auto-windows
                  (append pupo--auto-windows
                          (get-buffer-window-list buffer)))))

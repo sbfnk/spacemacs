@@ -1,6 +1,6 @@
 ;;; funcs.el --- Shell Layer functions File
 ;;
-;; Copyright (c) 2012-2016 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2018 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
@@ -43,10 +43,18 @@
 (defun spacemacs/default-pop-shell ()
   "Open the default shell in a popup."
   (interactive)
-  (let ((shell (if (eq 'multi-term shell-default-shell)
-                   'multiterm
-                 shell-default-shell)))
+  (let ((shell (case shell-default-shell
+                 ('multi-term 'multiterm)
+                 ('shell 'inferior-shell)
+                 (t shell-default-shell))))
     (call-interactively (intern (format "spacemacs/shell-pop-%S" shell)))))
+
+(defun spacemacs/resize-shell-to-desired-width ()
+  (when (and (string= (buffer-name) shell-pop-last-shell-buffer-name)
+             (memq shell-pop-window-position '(left right)))
+    (enlarge-window-horizontally (- (/ (* (frame-width) shell-default-width)
+                                       100)
+                                    (window-width)))))
 
 (defmacro make-shell-pop-command (func &optional shell)
   "Create a function to open a shell via the function FUNC.
@@ -68,7 +76,8 @@ SHELL is the SHELL function to use (i.e. when FUNC represents a terminal)."
           (backquote (,name
                       ,(concat "*" name "*")
                       (lambda nil (,func ,shell)))))
-         (shell-pop index)))))
+         (shell-pop index)
+         (spacemacs/resize-shell-to-desired-width)))))
 
 (defun projectile-multi-term-in-root ()
   "Invoke `multi-term' in the project's root."
@@ -82,10 +91,11 @@ connections the delay is often annoying, so it's better to let
 the user activate the completion manually."
   (if (file-remote-p default-directory)
       (setq-local company-idle-delay nil)
-    (setq-local company-idle-delay 0.2)))
+    (setq-local company-idle-delay auto-completion-idle-delay)))
 
 (defun spacemacs//eshell-switch-company-frontend ()
   "Sets the company frontend to `company-preview-frontend' in e-shell mode."
+  (require 'company)
   (setq-local company-frontends '(company-preview-frontend)))
 
 (defun spacemacs//eshell-auto-end ()
@@ -122,18 +132,27 @@ is achieved by adding the relevant text properties."
               'spacemacs//eshell-auto-end nil t)
     (add-hook 'evil-hybrid-state-entry-hook
               'spacemacs//eshell-auto-end nil t))
-  (when (configuration-layer/package-usedp 'semantic)
+  (when (configuration-layer/package-used-p 'semantic)
     (semantic-mode -1))
+  ;; This is an eshell alias
+  (defun eshell/clear ()
+    (let ((inhibit-read-only t))
+      (erase-buffer)))
+  ;; This is a key-command
+  (defun spacemacs/eshell-clear-keystroke ()
+    "Allow for keystrokes to invoke eshell/clear"
+    (interactive)
+    (eshell/clear)
+    (eshell-send-input))
   ;; Caution! this will erase buffer's content at C-l
-  (define-key eshell-mode-map (kbd "C-l") 'eshell/clear)
-  (define-key eshell-mode-map (kbd "C-d") 'eshell-delchar-or-maybe-eof))
+  (define-key eshell-mode-map (kbd "C-l") 'spacemacs/eshell-clear-keystroke)
+  (define-key eshell-mode-map (kbd "C-d") 'eshell-delchar-or-maybe-eof)
 
-;; This is an eshell alias
-(defun eshell/clear ()
-  (interactive)
-  (let ((inhibit-read-only t))
-    (erase-buffer))
-  (eshell-send-input))
+  ;; These don't work well in normal state
+  ;; due to evil/emacs cursor incompatibility
+  (evil-define-key 'insert eshell-mode-map
+    (kbd "C-k") 'eshell-previous-matching-input-from-input
+    (kbd "C-j") 'eshell-next-matching-input-from-input))
 
 (defun spacemacs/helm-eshell-history ()
   "Correctly revert to insert state after selection."
@@ -156,12 +175,19 @@ is achieved by adding the relevant text properties."
   (define-key eshell-mode-map
     (kbd "M-l") 'spacemacs/helm-eshell-history))
 
-(defun multiterm (_)
-  "Wrapper to be able to call multi-term from shell-pop"
-  (interactive)
-  (multi-term))
-
 (defun term-send-tab ()
   "Send tab in term mode."
   (interactive)
   (term-send-raw-string "\t"))
+
+;; Wrappers for non-standard shell commands
+(defun multiterm (&optional ARG)
+  "Wrapper to be able to call multi-term from shell-pop"
+  (interactive)
+  (multi-term))
+
+(defun inferior-shell (&optional ARG)
+  "Wrapper to open shell in current window"
+  (interactive)
+  (switch-to-buffer "*shell*")
+  (shell "*shell*"))

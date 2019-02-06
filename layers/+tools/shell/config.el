@@ -1,6 +1,6 @@
 ;;; config.el --- shell configuration File for Spacemacs
 ;;
-;; Copyright (c) 2012-2016 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2018 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
@@ -14,19 +14,13 @@
 ;; move point to the end of buffer on new output
 (setq comint-move-point-for-output t)
 
-;; Add shell buffers to useful buffers list
-(push "\\*\\(ansi-term\\|eshell\\|shell\\|terminal\.\+\\)\\(-[0-9]+\\)?\\*"
-      spacemacs-useful-buffers-regexp)
-
 ;; Variables
-
-(spacemacs|defvar-company-backends eshell-mode)
 
 (defvar shell-default-shell (if (eq window-system 'w32)
                                 'eshell
                               'ansi-term)
   "Default shell to use in Spacemacs. Possible values are `eshell', `shell',
-`term' and `ansi-term'.")
+`term', `ansi-term' and `multi-term'.")
 
 (defvar shell-default-position 'bottom
   "Position of the shell. Possible values are `top', `bottom', `full',
@@ -34,6 +28,9 @@
 
 (defvar shell-default-height 30
   "Height in percents for the shell window.")
+
+(defvar shell-default-width 30
+  "Width in percents for the shell window.")
 
 (defvar shell-default-term-shell shell-file-name
   "Default shell to use in `term' and `ansi-term' shells.")

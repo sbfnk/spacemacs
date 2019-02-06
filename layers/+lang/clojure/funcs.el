@@ -1,6 +1,6 @@
 ;;; funcs.el --- Clojure Layer functions File for Spacemacs
 ;;
-;; Copyright (c) 2012-2016 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2018 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
@@ -13,27 +13,32 @@
   "Pretty symbols for Clojure's anonymous functions and sets,
    like (λ [a] (+ a 5)), ƒ(+ % 5), and ∈{2 4 6}."
   (font-lock-add-keywords mode
-    `(("(\\(fn\\)[\[[:space:]]"
+    `(("(\\(fn\\)[[[:space:]]"
        (0 (progn (compose-region (match-beginning 1)
-                                 (match-end 1) "λ"))))
-      ("(\\(partial\\)[\[[:space:]]"
+                                 (match-end 1) "λ")
+                 nil)))
+      ("(\\(partial\\)[[[:space:]]"
        (0 (progn (compose-region (match-beginning 1)
-                                 (match-end 1) "Ƥ"))))
-      ("(\\(comp\\)[\[[:space:]]"
+                                 (match-end 1) "Ƥ")
+                 nil)))
+      ("(\\(comp\\)[[[:space:]]"
        (0 (progn (compose-region (match-beginning 1)
-                                 (match-end 1) "∘"))))
+                                 (match-end 1) "∘")
+                 nil)))
       ("\\(#\\)("
        (0 (progn (compose-region (match-beginning 1)
-                                 (match-end 1) "ƒ"))))
+                                 (match-end 1) "ƒ")
+                 nil)))
       ("\\(#\\){"
        (0 (progn (compose-region (match-beginning 1)
-                                 (match-end 1) "∈")))))))
+                                 (match-end 1) "∈")
+                 nil))))))
 
 (defun spacemacs//cider-eval-in-repl-no-focus (form)
   "Insert FORM in the REPL buffer and eval it."
   (while (string-match "\\`[ \t\n\r]+\\|[ \t\n\r]+\\'" form)
     (setq form (replace-match "" t t form)))
-  (with-current-buffer (cider-current-repl-buffer)
+  (with-current-buffer (cider-current-connection)
     (let ((pt-max (point-max)))
       (goto-char pt-max)
       (insert form)
@@ -124,19 +129,19 @@ the focus."
   "Run loaded tests."
   (interactive)
   (cider-load-buffer)
-  (cider-test-run-loaded-tests nil))
+  (cider-test-run-loaded-tests))
 
 (defun spacemacs/cider-test-run-project-tests ()
   "Run project tests."
   (interactive)
   (cider-load-buffer)
-  (cider-test-run-project-tests nil))
+  (cider-test-run-project-tests))
 
-(defun spacemacs/cider-test-rerun-tests ()
-  "Run previous tests again."
+(defun spacemacs/cider-test-rerun-failed-tests ()
+  "Rerun failed tests."
   (interactive)
   (cider-load-buffer)
-  (cider-test-rerun-tests))
+  (cider-test-rerun-failed-tests))
 
 (defun spacemacs/cider-display-error-buffer (&optional arg)
   "Displays the *cider-error* buffer in the current window.
@@ -170,3 +175,37 @@ If called with a prefix argument, uses the other-window instead."
   (when (memq dotspacemacs-editing-style '(hybrid vim))
     (evil-make-overriding-map cider--debug-mode-map 'normal)
     (evil-normalize-keymaps)))
+
+(defun spacemacs/clj-find-var ()
+  "Attempts to jump-to-definition of the symbol-at-point. If CIDER fails, or not available, falls back to dumb-jump"
+  (interactive)
+  (let ((var (cider-symbol-at-point)))
+    (if (and (cider-connected-p) (cider-var-info var))
+        (unless (eq 'symbol (type-of (cider-find-var nil var)))
+          (dumb-jump-go))
+      (dumb-jump-go))))
+
+(defun spacemacs/clj-describe-missing-refactorings ()
+  "Inform the user to add clj-refactor to configuration"
+  (interactive)
+  (with-help-window (help-buffer)
+    (princ "The package clj-refactor is disabled by default.
+To enable it, add the following variable to the clojure layer
+in your Spacemacs configuration:
+
+  dotspacemacs-configuration-layers
+  '(...
+    (clojure :variables
+             clojure-enable-clj-refactor t)
+    ) ")))
+
+(defmacro spacemacs|forall-clojure-modes (m &rest body)
+  "Executes BODY with M bound to all clojure derived modes."
+  (declare (indent 1))
+  `(dolist (,m '(clojure-mode
+                 clojurec-mode
+                 clojurescript-mode
+                 clojurex-mode
+                 cider-repl-mode
+                 cider-clojure-interaction-mode))
+     ,@body))

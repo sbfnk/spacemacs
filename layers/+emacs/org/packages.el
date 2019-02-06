@@ -1,6 +1,6 @@
 ;;; packages.el --- Org Layer packages File for Spacemacs
 ;;
-;; Copyright (c) 2012-2016 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2018 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
@@ -10,64 +10,62 @@
 ;;; License: GPLv3
 
 (setq org-packages
-  '(
-    company
-    company-emoji
-    emoji-cheat-sheet-plus
-    (evil-org :location local)
-    evil-surround
-    gnuplot
-    helm-bibtex
-    htmlize
-    mu4e
-    ;; ob, org and org-agenda are installed by `org-plus-contrib'
-    (ob :location built-in)
-    (org :location built-in)
-    (org-agenda :location built-in)
-    (org-contacts :location built-in)
-    (org-expiry :location built-in)
-    org-download
-    ;; org-mime is installed by `org-plus-contrib'
-    (org-mime :location built-in)
-    org-pomodoro
-    org-present
-    org-ref
-    (org-projectile :toggle (configuration-layer/package-usedp 'projectile))
-    (ox-twbs :toggle org-enable-bootstrap-support)
-    ;; use a for of ox-gfm to fix index generation
-    (ox-gfm :location (recipe :fetcher github :repo "syl20bnr/ox-gfm")
-            :toggle org-enable-github-support)
-    (ox-reveal :toggle org-enable-reveal-js-support)
-    persp-mode
-    ))
+      '(
+        company
+        company-emoji
+        emoji-cheat-sheet-plus
+        evil-org
+        evil-surround
+        gnuplot
+        (helm-org-rifle :toggle (configuration-layer/layer-used-p 'helm))
+        htmlize
+        ;; ob, org and org-agenda are installed by `org-plus-contrib'
+        (ob :location built-in)
+        (org :location built-in)
+        (org-agenda :location built-in)
+        (org-brain :toggle (version<= "25" emacs-version))
+        (org-expiry :location built-in)
+        (org-journal :toggle org-enable-org-journal-support)
+        org-download
+        org-mime
+        org-pomodoro
+        org-present
+        (org-projectile :requires projectile)
+        (ox-twbs :toggle org-enable-bootstrap-support)
+        ;; use a for of ox-gfm to fix index generation
+        (ox-gfm :location (recipe :fetcher github :repo "syl20bnr/ox-gfm")
+                :toggle org-enable-github-support)
+        (ox-reveal :toggle org-enable-reveal-js-support)
+        persp-mode
+        (ox-hugo :toggle org-enable-hugo-support)
+        (org-trello :toggle org-enable-trello-support)
+        ))
 
 (defun org/post-init-company ()
-  (spacemacs|add-company-hook org-mode)
-  (push 'company-capf company-backends-org-mode))
+  (spacemacs|add-company-backends :backends company-capf :modes org-mode))
 
 (defun org/post-init-company-emoji ()
-  (push 'company-emoji company-backends-org-mode))
+  (spacemacs|add-company-backends :backends company-emoji :modes org-mode))
 
 (defun org/post-init-emoji-cheat-sheet-plus ()
   (add-hook 'org-mode-hook 'spacemacs/delay-emoji-cheat-sheet-hook))
 
 (defun org/init-evil-org ()
   (use-package evil-org
-    :commands (evil-org-mode evil-org-recompute-clocks)
-    :init (add-hook 'org-mode-hook 'evil-org-mode)
-    :config
+    :defer t
+    :init
     (progn
-      (evil-define-key 'normal evil-org-mode-map
-        "O" 'evil-open-above)
-      (spacemacs/set-leader-keys-for-major-mode 'org-mode
-        "C" 'evil-org-recompute-clocks)
-      (spacemacs|diminish evil-org-mode " ⓔ" " e"))))
+      (add-hook 'org-mode-hook 'spacemacs//evil-org-mode)
+      (setq evil-org-use-additional-insert t
+            evil-org-key-theme `(textobjects
+                                 navigation
+                                 additional
+                                 ,@(when org-want-todo-bindings '(todo)))))
+    :config
+    (spacemacs|hide-lighter evil-org-mode)))
 
 (defun org/post-init-evil-surround ()
-  (defun spacemacs/add-org-surrounds ()
-    (push '(?: . spacemacs//surround-drawer) evil-surround-pairs-alist)
-    (push '(?# . spacemacs//surround-code) evil-surround-pairs-alist))
-  (add-hook 'org-mode-hook 'spacemacs/add-org-surrounds))
+  (add-hook 'org-mode-hook 'spacemacs/org-setup-evil-surround))
 
 (defun org/init-gnuplot ()
   (use-package gnuplot
@@ -75,14 +73,14 @@
     :init (spacemacs/set-leader-keys-for-major-mode 'org-mode
             "tp" 'org-plot/gnuplot)))
 
+(defun org/init-helm-org-rifle ()
+  (use-package helm-org-rifle
+    :defer t
+    :init (spacemacs/set-leader-keys "aor" 'helm-org-rifle)))
+
 (defun org/init-htmlize ()
   (use-package htmlize
     :defer t))
-
-(defun org/pre-init-mu4e ()
-  ;; Load org-mu4e when mu4e is actually loaded
-  (spacemacs|use-package-add-hook mu4e
-    :post-config (require 'org-mu4e nil 'noerror)))
 
 (defun org/init-ob ()
   (use-package ob
@@ -99,20 +97,24 @@
 
 (defun org/init-org ()
   (use-package org
-    :defer t
+    :defer (spacemacs/defer)
     :commands (orgtbl-mode)
     :init
     (progn
+      (spacemacs|require 'org)
       (setq org-clock-persist-file (concat spacemacs-cache-directory
                                            "org-clock-save.el")
             org-id-locations-file (concat spacemacs-cache-directory
                                           ".org-id-locations")
             org-publish-timestamp-directory (concat spacemacs-cache-directory
                                                     ".org-timestamps/")
+            org-directory "~/org" ;; needs to be defined for `org-default-notes-file'
+            org-default-notes-file (expand-file-name "notes.org" org-directory)
             org-log-done t
             org-startup-with-inline-images t
             org-image-actual-width nil
             org-src-fontify-natively t
+            org-src-tab-acts-natively t
             ;; this is consistent with the value of
             ;; `helm-org-headings-max-depth'.
             org-imenu-depth 8)
@@ -133,21 +135,19 @@
           "a" 'org-capture-kill
           "c" 'org-capture-finalize
           "k" 'org-capture-kill
-          "R" 'org-capture-refile))
+          "r" 'org-capture-refile))
 
       (with-eval-after-load 'org-src
         (spacemacs/set-leader-keys-for-minor-mode 'org-src-mode
-          "'" 'org-edit-src-exit
+          dotspacemacs-major-mode-leader-key 'org-edit-src-exit
           "c" 'org-edit-src-exit
           "a" 'org-edit-src-abort
           "k" 'org-edit-src-abort))
 
+      (add-hook 'org-mode-hook 'dotspacemacs//prettify-spacemacs-docs)
+
       (let ((dir (configuration-layer/get-layer-local-dir 'org)))
         (setq org-export-async-init-file (concat dir "org-async-init.el")))
-      (defmacro spacemacs|org-emphasize (fname char)
-        "Make function for setting the emphasis in org mode"
-        `(defun ,fname () (interactive)
-                (org-emphasize ,char)))
 
       ;; Insert key for org-mode and markdown a la C-h k
       ;; from SE endless http://emacs.stackexchange.com/questions/2206/i-want-to-have-the-kbd-tags-for-my-blog-written-in-org-mode/2208#2208
@@ -162,38 +162,61 @@ Will work on both org-mode and any mode that accepts plain html."
             (insert (format tag ""))
             (forward-char -8))))
 
-      (dolist (prefix '(("mx" . "text")
-                        ("mh" . "headings")
+      (dolist (prefix '(
+                        ("mb" . "babel")
+                        ("mC" . "clocks")
+                        ("md" . "dates")
+                        ("me" . "export")
+                        ("mf" . "feeds")
                         ("mi" . "insert")
-                        ("mS" . "subtrees")
+                        ("miD" . "download")
+                        ("mm" . "more")
+                        ("ms" . "trees/subtrees")
+                        ("mT" . "toggles")
                         ("mt" . "tables")
                         ("mtd" . "delete")
                         ("mti" . "insert")
-                        ("mtt" . "toggle")))
+                        ("mtt" . "toggle")
+                        ("mx" . "text")
+                        ))
         (spacemacs/declare-prefix-for-mode 'org-mode (car prefix) (cdr prefix)))
       (spacemacs/set-leader-keys-for-major-mode 'org-mode
         "'" 'org-edit-special
         "c" 'org-capture
-        "d" 'org-deadline
-        "D" 'org-insert-drawer
-        "e" 'org-export-dispatch
-        "f" 'org-set-effort
-        "P" 'org-set-property
-        ":" 'org-set-tags
+
+        ;; Clock
+        ;; These keybindings should match those under the "aoC" prefix (below)
+        "Cc" 'org-clock-cancel
+        "Cd" 'org-clock-display
+        "Ce" 'org-evaluate-time-range
+        "Cg" 'org-clock-goto
+        "Ci" 'org-clock-in
+        "CI" 'org-clock-in-last
+        "Cj" 'org-clock-jump-to-current-clock
+        "Co" 'org-clock-out
+        "CR" 'org-clock-report
+        "Cr" 'org-resolve-clocks
+
+        "dd" 'org-deadline
+        "ds" 'org-schedule
+        "dt" 'org-time-stamp
+        "dT" 'org-time-stamp-inactive
+        "ee" 'org-export-dispatch
+        "fi" 'org-feed-goto-inbox
+        "fu" 'org-feed-update-all
 
         "a" 'org-agenda
-        "b" 'org-tree-to-indirect-buffer
-        "A" 'org-archive-subtree
-        "l" 'org-open-at-point
-        "T" 'org-show-todo-tree
 
-        "." 'org-time-stamp
-        "!" 'org-time-stamp-inactive
+        "p" 'org-priority
 
-        ;; headings
-        "hi" 'org-insert-heading-after-current
-        "hI" 'org-insert-heading
-        "hs" 'org-insert-subheading
+        "Tc" 'org-toggle-checkbox
+        "Te" 'org-toggle-pretty-entities
+        "Ti" 'org-toggle-inline-images
+        "Tl" 'org-toggle-link-display
+        "Tt" 'org-show-todo-tree
+        "TT" 'org-todo
+        "TV" 'space-doc-mode
+        "Tx" 'org-toggle-latex-fragment
 
         ;; More cycling options (timestamps, headlines, items, properties)
         "L" 'org-shiftright
@@ -208,10 +231,18 @@ Will work on both org-mode and any mode that accepts plain html."
         "C-S-k" 'org-shiftcontrolup
 
         ;; Subtree editing
-        "Sl" 'org-demote-subtree
-        "Sh" 'org-promote-subtree
-        "Sj" 'org-move-subtree-down
-        "Sk" 'org-move-subtree-up
+        "sa" 'org-toggle-archive-tag
+        "sA" 'org-archive-subtree
+        "sb" 'org-tree-to-indirect-buffer
+        "sh" 'org-promote-subtree
+        "sj" 'org-move-subtree-down
+        "sk" 'org-move-subtree-up
+        "sl" 'org-demote-subtree
+        "sn" 'org-narrow-to-subtree
+        "sN" 'widen
+        "sr" 'org-refile
+        "ss" 'org-sparse-tree
+        "sS" 'org-sort
 
         ;; tables
         "ta" 'org-table-align
@@ -241,43 +272,67 @@ Will work on both org-mode and any mode that accepts plain html."
         "tto" 'org-table-toggle-coordinate-overlays
         "tw" 'org-table-wrap-region
 
+        ;; Source blocks / org-babel
+        "bp"     'org-babel-previous-src-block
+        "bn"     'org-babel-next-src-block
+        "be"     'org-babel-execute-maybe
+        "bo"     'org-babel-open-src-block-result
+        "bv"     'org-babel-expand-src-block
+        "bu"     'org-babel-goto-src-block-head
+        "bg"     'org-babel-goto-named-src-block
+        "br"     'org-babel-goto-named-result
+        "bb"     'org-babel-execute-buffer
+        "bs"     'org-babel-execute-subtree
+        "bd"     'org-babel-demarcate-block
+        "bt"     'org-babel-tangle
+        "bf"     'org-babel-tangle-file
+        "bc"     'org-babel-check-src-block
+        "bj"     'org-babel-insert-header-arg
+        "bl"     'org-babel-load-in-session
+        "bi"     'org-babel-lob-ingest
+        "bI"     'org-babel-view-src-block-info
+        "bz"     'org-babel-switch-to-session
+        "bZ"     'org-babel-switch-to-session-with-code
+        "ba"     'org-babel-sha1-hash
+        "bx"     'org-babel-do-key-sequence-in-edit-buffer
+        "b."     'spacemacs/org-babel-transient-state/body
         ;; Multi-purpose keys
         (or dotspacemacs-major-mode-leader-key ",") 'org-ctrl-c-ctrl-c
         "*" 'org-ctrl-c-star
-        "RET" 'org-ctrl-c-ret
         "-" 'org-ctrl-c-minus
-        "^" 'org-sort
-        "/" 'org-sparse-tree
-
-        "I" 'org-clock-in
-        "n" 'org-narrow-to-subtree
-        "N" 'widen
-        "O" 'org-clock-out
-        "q" 'org-clock-cancel
-        "r" 'org-ref-helm-insert-cite-link
-        "R" 'org-refile
-        "s" 'org-schedule
-
-        ;; insertion of common elements
-        "il" 'org-insert-link
+        "#" 'org-update-statistics-cookies
+        "RET"   'org-ctrl-c-ret
+        "M-RET" 'org-meta-return
+        ;; attachments
+        "A" 'org-attach
+        ;; insertion
+        "ib" 'org-insert-structure-template
+        "id" 'org-insert-drawer
+        "ie" 'org-set-effort
         "if" 'org-footnote-new
-        "ik" 'spacemacs/insert-keybinding-org
-
-        ;; images and other link types have no commands in org mode-line
-        ;; could be inserted using yasnippet?
+        "ih" 'org-insert-heading
+        "iH" 'org-insert-heading-after-current
+        "iK" 'spacemacs/insert-keybinding-org
+        "il" 'org-insert-link
+        "in" 'org-add-note
+        "ip" 'org-set-property
+        "is" 'org-insert-subheading
+        "it" 'org-set-tags-command
         ;; region manipulation
         "xb" (spacemacs|org-emphasize spacemacs/org-bold ?*)
         "xc" (spacemacs|org-emphasize spacemacs/org-code ?~)
         "xi" (spacemacs|org-emphasize spacemacs/org-italic ?/)
+        "xo" 'org-open-at-point
         "xr" (spacemacs|org-emphasize spacemacs/org-clear ? )
         "xs" (spacemacs|org-emphasize spacemacs/org-strike-through ?+)
         "xu" (spacemacs|org-emphasize spacemacs/org-underline ?_)
-        "xv" (spacemacs|org-emphasize spacemacs/org-verbose ?=))
+        "xv" (spacemacs|org-emphasize spacemacs/org-verbatim ?=))
 
       ;; Add global evil-leader mappings. Used to access org-agenda
       ;; functionalities – and a few others commands – from any other mode.
       (spacemacs/declare-prefix "ao" "org")
-      (spacemacs/declare-prefix "aok" "clock")
+      (spacemacs/declare-prefix "aof" "feeds")
+      (spacemacs/declare-prefix "aoC" "clock")
       (spacemacs/set-leader-keys
         ;; org-agenda
         "ao#" 'org-agenda-list-stuck-projects
@@ -285,22 +340,32 @@ Will work on both org-mode and any mode that accepts plain html."
         "aoa" 'org-agenda-list
         "aoc" 'org-capture
         "aoe" 'org-store-agenda-views
-        "aoki" 'org-clock-in-last
-        "aokj" 'org-clock-jump-to-current-clock
-        "aoko" 'org-clock-out
+        "aofi" 'org-feed-goto-inbox
+        "aofu" 'org-feed-update-all
+
+        ;; Clock
+        ;; These keybindings should match those under the "mC" prefix (above)
+        "aoCc" 'org-clock-cancel
+        "aoCg" 'org-clock-goto
+        "aoCi" 'org-clock-in
+        "aoCI" 'org-clock-in-last
+        "aoCj" 'org-clock-jump-to-current-clock
+        "aoCo" 'org-clock-out
+        "aoCr" 'org-resolve-clocks
+
         "aol" 'org-store-link
         "aom" 'org-tags-view
         "aoo" 'org-agenda
         "aos" 'org-search-view
-        "aot" 'org-todo-list)
+        "aot" 'org-todo-list
+        ;; SPC C- capture/colors
+        "Cc" 'org-capture)
 
       (define-key global-map "\C-cl" 'org-store-link)
       (define-key global-map "\C-ca" 'org-agenda)
       (define-key global-map "\C-cc" 'org-capture))
     :config
     (progn
-      (setq org-default-notes-file "notes.org")
-
       ;; We add this key mapping because an Emacs user can change
       ;; `dotspacemacs-major-mode-emacs-leader-key' to `C-c' and the key binding
       ;; C-c ' is shadowed by `spacemacs/default-pop-shell', effectively making
@@ -308,8 +373,6 @@ Will work on both org-mode and any mode that accepts plain html."
       (define-key org-src-mode-map
         (kbd (concat dotspacemacs-major-mode-emacs-leader-key " '"))
         'org-edit-src-exit)
-
-      (spacemacs/set-leader-keys "Cc" 'org-capture)
 
       ;; Evilify the calendar tool on C-c .
       (unless (eq 'emacs dotspacemacs-editing-style)
@@ -336,7 +399,22 @@ Will work on both org-mode and any mode that accepts plain html."
             (org-eval-in-calendar '(calendar-backward-year 1))))
         (define-key org-read-date-minibuffer-local-map (kbd "M-J")
           (lambda () (interactive)
-            (org-eval-in-calendar '(calendar-forward-year 1))))))))
+            (org-eval-in-calendar '(calendar-forward-year 1)))))
+
+      (spacemacs|define-transient-state org-babel
+        :title "Org Babel Transient state"
+        :doc "
+[_j_/_k_] navigate src blocks         [_e_] execute src block
+[_g_]^^   goto named block            [_'_] edit src block
+[_z_]^^   recenter screen             [_q_] quit"
+        :bindings
+        ("q" nil :exit t)
+        ("j" org-babel-next-src-block)
+        ("k" org-babel-previous-src-block)
+        ("g" org-babel-goto-named-src-block)
+        ("z" recenter-top-bottom)
+        ("e" org-babel-execute-maybe :exit t)
+        ("'" org-edit-special :exit t)))))
 
 (defun org/init-org-agenda ()
   (use-package org-agenda
@@ -344,17 +422,23 @@ Will work on both org-mode and any mode that accepts plain html."
     :init
     (progn
       (setq org-agenda-restore-windows-after-quit t)
+      (dolist (prefix '(("mC" . "clocks")
+                        ("md" . "dates")
+                        ("mi" . "insert")
+                        ("ms" . "trees/subtrees")))
+        (spacemacs/declare-prefix-for-mode 'org-agenda-mode
+          (car prefix) (cdr prefix)))
       (spacemacs/set-leader-keys-for-major-mode 'org-agenda-mode
-        ":" 'org-agenda-set-tags
         "a" 'org-agenda
-        "d" 'org-agenda-deadline
-        "f" 'org-agenda-set-effort
-        "I" 'org-agenda-clock-in
-        "O" 'org-agenda-clock-out
-        "P" 'org-agenda-set-property
-        "q" 'org-agenda-clock-cancel
-        "R" 'org-agenda-refile
-        "s" 'org-agenda-schedule)
+        "Cc" 'org-agenda-clock-cancel
+        "Ci" 'org-agenda-clock-in
+        "Co" 'org-agenda-clock-out
+        "dd" 'org-agenda-deadline
+        "ds" 'org-agenda-schedule
+        "ie" 'org-agenda-set-effort
+        "ip" 'org-agenda-set-property
+        "it" 'org-agenda-set-tags
+        "sr" 'org-agenda-refile)
       (spacemacs|define-transient-state org-agenda
       :title "Org-agenda transient state"
       :on-enter (setq which-key-inhibit t)
@@ -362,16 +446,16 @@ Will work on both org-mode and any mode that accepts plain html."
       :foreign-keys run
       :doc
       "
-Headline^^            Visit entry^^               Filter^^                    Date^^               Toggle mode^^        View^^             Clock^^        Other^^
---------^^---------   -----------^^------------   ------^^-----------------   ----^^-------------  -----------^^------  ----^^---------    -----^^------  -----^^-----------
-[_ht_] set status     [_SPC_] in other window     [_ft_] by tag               [_ds_] schedule      [_tf_] follow        [_vd_] day         [_cI_] in      [_gr_] reload
-[_hk_] kill           [_TAB_] & go to location    [_fr_] refine by tag        [_dd_] set deadline  [_tl_] log           [_vw_] week        [_cO_] out     [_._]  go to today
-[_hR_] refile         [_RET_] & del other windows [_fc_] by category          [_dt_] timestamp     [_ta_] archive       [_vt_] fortnight   [_cq_] cancel  [_gd_] go to date
-[_hA_] archive        [_o_]   link                [_fh_] by top headline      [_+_]  do later      [_tr_] clock report  [_vm_] month       [_cj_] jump    ^^
-[_h:_] set tags       ^^                          [_fx_] by regexp            [_-_]  do earlier    [_td_] diaries       [_vy_] year        ^^             ^^
-[_hp_] set priority   ^^                          [_fd_] delete all filters   ^^                   ^^                   [_vn_] next span   ^^             ^^
-^^                    ^^                          ^^                          ^^                   ^^                   [_vp_] prev span   ^^             ^^
-^^                    ^^                          ^^                          ^^                   ^^                   [_vr_] reset       ^^             ^^
+Headline^^            Visit entry^^               Filter^^                    Date^^                  Toggle mode^^        View^^             Clock^^        Other^^
+--------^^---------   -----------^^------------   ------^^-----------------   ----^^-------------     -----------^^------  ----^^---------    -----^^------  -----^^-----------
+[_ht_] set status     [_SPC_] in other window     [_ft_] by tag               [_ds_] schedule         [_tf_] follow        [_vd_] day         [_cI_] in      [_gr_] reload
+[_hk_] kill           [_TAB_] & go to location    [_fr_] refine by tag        [_dS_] un-schedule      [_tl_] log           [_vw_] week        [_cO_] out     [_._]  go to today
+[_hr_] refile         [_RET_] & del other windows [_fc_] by category          [_dd_] set deadline     [_ta_] archive       [_vt_] fortnight   [_cq_] cancel  [_gd_] go to date
+[_hA_] archive        [_o_]   link                [_fh_] by top headline      [_dD_] remove deadline  [_tr_] clock report  [_vm_] month       [_cj_] jump    ^^
+[_h:_] set tags       ^^                          [_fx_] by regexp            [_dt_] timestamp        [_td_] diaries       [_vy_] year        ^^             ^^
+[_hp_] set priority   ^^                          [_fd_] delete all filters   [_+_]  do later         ^^                   [_vn_] next span   ^^             ^^
+^^                    ^^                          ^^                          [_-_]  do earlier       ^^                   [_vp_] prev span   ^^             ^^
+^^                    ^^                          ^^                          ^^                      ^^                   [_vr_] reset       ^^             ^^
 [_q_] quit
 "
       :bindings
@@ -380,7 +464,7 @@ Headline^^            Visit entry^^               Filter^^                    Da
       ("hA" org-agenda-archive-default)
       ("hk" org-agenda-kill)
       ("hp" org-agenda-priority)
-      ("hR" org-agenda-refile)
+      ("hr" org-agenda-refile)
       ("ht" org-agenda-todo)
 
       ;; Visit entry
@@ -392,8 +476,14 @@ Headline^^            Visit entry^^               Filter^^                    Da
 
       ;; Date
       ("ds" org-agenda-schedule)
+      ("dS" (lambda () (interactive)
+             (let ((current-prefix-arg '(4)))
+                  (call-interactively 'org-agenda-schedule))))
       ("dd" org-agenda-deadline)
       ("dt" org-agenda-date-prompt)
+      ("dD" (lambda () (interactive)
+             (let ((current-prefix-arg '(4)))
+                  (call-interactively 'org-agenda-deadline))))
       ("+" org-agenda-do-date-later)
       ("-" org-agenda-do-date-earlier)
 
@@ -439,6 +529,10 @@ Headline^^            Visit entry^^               Filter^^                    Da
       :bindings
       "j" 'org-agenda-next-line
       "k" 'org-agenda-previous-line
+      ;; C-h should not be rebound by evilification so we unshadow it manually
+      ;; TODO add the rule in auto-evilification to ignore C-h (like we do
+      ;; with C-g)
+      (kbd "C-h") nil
       (kbd "M-j") 'org-agenda-next-item
       (kbd "M-k") 'org-agenda-previous-item
       (kbd "M-h") 'org-agenda-earlier
@@ -449,8 +543,14 @@ Headline^^            Visit entry^^               Filter^^                    Da
       (kbd "M-SPC") 'spacemacs/org-agenda-transient-state/body
       (kbd "s-M-SPC") 'spacemacs/org-agenda-transient-state/body)))
 
-(defun org/init-org-contacts ()
-  (use-package org-contacts))
+(defun org/init-org-brain ()
+  (use-package org-brain
+    :defer t
+    :init
+    (progn
+      (spacemacs/set-leader-keys
+        "aob" 'org-brain-visualize)
+      (evil-set-initial-state 'org-brain-visualize-mode 'emacs))))
 
 (defun org/init-org-expiry ()
   (use-package org-expiry
@@ -471,20 +571,20 @@ Headline^^            Visit entry^^               Filter^^                    Da
     :init
     (progn
       (add-hook 'org-mode-hook 'org-download-enable)
+      (spacemacs/declare-prefix-for-mode 'org-mode "miD" "download")
       (spacemacs/set-leader-keys-for-major-mode 'org-mode
-        "iy" 'org-download-yank
-        "is" 'org-download-screenshot))))
+        "iDy" 'org-download-yank
+        "iDs" 'org-download-screenshot))))
 
 (defun org/init-org-mime ()
   (use-package org-mime
     :defer t
-    :commands (org-mime-htmlize org-mime-org-buffer-htmlize)
     :init
     (progn
       (spacemacs/set-leader-keys-for-major-mode 'message-mode
-        "M" 'org-mime-htmlize)
+        "em" 'org-mime-htmlize)
       (spacemacs/set-leader-keys-for-major-mode 'org-mode
-        "m" 'org-mime-org-buffer-htmlize))))
+        "em" 'org-mime-org-buffer-htmlize))))
 
 (defun org/init-org-pomodoro ()
   (use-package org-pomodoro
@@ -494,9 +594,9 @@ Headline^^            Visit entry^^               Filter^^                    Da
       (when (spacemacs/system-is-mac)
         (setq org-pomodoro-audio-player "/usr/bin/afplay"))
       (spacemacs/set-leader-keys-for-major-mode 'org-mode
-        "p" 'org-pomodoro)
+        "Cp" 'org-pomodoro)
       (spacemacs/set-leader-keys-for-major-mode 'org-agenda-mode
-        "p" 'org-pomodoro))))
+        "Cp" 'org-pomodoro))))
 
 (defun org/init-org-present ()
   (use-package org-present
@@ -524,13 +624,9 @@ Headline^^            Visit entry^^               Filter^^                    Da
       (add-hook 'org-present-mode-hook 'spacemacs//org-present-start)
       (add-hook 'org-present-mode-quit-hook 'spacemacs//org-present-end))))
 
-(defun org/init-org-ref ()
-  (use-package org-ref
-    :defer t))
-
 (defun org/init-org-projectile ()
   (use-package org-projectile
-    :commands (org-projectile:location-for-project)
+    :commands (org-projectile-location-for-project)
     :init
     (progn
       (spacemacs/set-leader-keys
@@ -541,21 +637,23 @@ Headline^^            Visit entry^^               Filter^^                    Da
     :config
     (if (file-name-absolute-p org-projectile-file)
         (progn
-          (setq org-projectile:projects-file org-projectile-file)
-          (push (org-projectile:project-todo-entry
-                 nil nil nil :empty-lines 1)
+          (setq org-projectile-projects-file org-projectile-file)
+          (push (org-projectile-project-todo-entry :empty-lines 1)
                 org-capture-templates))
-      (org-projectile:per-repo)
-      (setq org-projectile:per-repo-filename org-projectile-file))))
+      (org-projectile-per-project)
+      (setq org-projectile-per-project-filepath org-projectile-file))))
 
-(defun org/init-ox-twbs ()
+(defun org/pre-init-ox-twbs ()
   (spacemacs|use-package-add-hook org :post-config (require 'ox-twbs)))
+(defun org/init-ox-twbs ())
 
-(defun org/init-ox-gfm ()
+(defun org/pre-init-ox-gfm ()
   (spacemacs|use-package-add-hook org :post-config (require 'ox-gfm)))
+(defun org/init-ox-gfm ())
 
-(defun org/init-ox-reveal ()
+(defun org/pre-init-ox-reveal ()
   (spacemacs|use-package-add-hook org :post-config (require 'ox-reveal)))
+(defun org/init-ox-reveal ())
 
 (defun org/post-init-persp-mode ()
   (spacemacs|define-custom-layout "@Org"
@@ -565,3 +663,55 @@ Headline^^            Visit entry^^               Filter^^                    Da
       (if agenda-files
           (find-file (first agenda-files))
         (user-error "Error: No agenda files configured, nothing to display.")))))
+
+(defun org/init-org-journal ()
+  (use-package org-journal
+    :defer t
+    :commands (org-journal-new-entry org-journal-search-forever)
+    :init
+    (progn
+      (spacemacs/declare-prefix "aoj" "org-journal")
+      (spacemacs/set-leader-keys
+        "aojj" 'org-journal-new-entry
+        "aojs" 'org-journal-search-forever)
+
+      (setq spacemacs-org-journal-mode-map (copy-keymap spacemacs-org-mode-map))
+
+      (spacemacs/set-leader-keys-for-major-mode 'calendar-mode
+        "r" 'org-journal-read-entry
+        "i" 'org-journal-new-date-entry
+        "n" 'org-journal-next-entry
+        "p" 'org-journal-previous-entry
+        "s" 'org-journal-search-forever
+        "w" 'org-journal-search-calendar-week
+        "m" 'org-journal-search-calendar-month
+        "y" 'org-journal-search-calendar-year)
+
+      (spacemacs/set-leader-keys-for-major-mode 'org-journal-mode
+        "j" 'org-journal-new-entry
+        "n" 'org-journal-open-next-entry
+        "p" 'org-journal-open-previous-entry)
+
+      (spacemacs//init-leader-mode-map 'org-journal-mode 'spacemacs-org-journal-mode-map))))
+
+(defun org/init-ox-hugo ()
+  (use-package ox-hugo :after ox))
+
+(defun org/init-org-trello ()
+  (use-package org-trello
+    :after org
+    :config
+    (progn
+      (spacemacs/declare-prefix-for-mode 'org-mode "mmt" "trello")
+      (spacemacs/declare-prefix-for-mode 'org-mode "mmtd" "sync down")
+      (spacemacs/declare-prefix-for-mode 'org-mode "mmtu" "sync up")
+      (spacemacs/set-leader-keys-for-major-mode 'org-mode
+        "mtI" 'org-trello-install-key-and-token
+        "mta" 'org-trello-archive-card
+        "mtc" 'org-trello-create-board-and-install-metadata
+        "mti" 'org-trello-install-board-metadata
+        "mtm" 'org-trello-update-board-metadata
+        "mtdb" 'spacemacs/org-trello-pull-buffer
+        "mtdc" 'spacemacs/org-trello-pull-card
+        "mtub" 'spacemacs/org-trello-push-buffer
+        "mtuc" 'spacemacs/org-trello-push-card))))

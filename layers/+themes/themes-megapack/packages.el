@@ -1,6 +1,6 @@
 ;;; packages.el --- Themes Mega-Pack Layer packages File for Spacemacs
 ;;
-;; Copyright (c) 2012-2016 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2018 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
@@ -18,7 +18,7 @@
     apropospriate-theme
     anti-zenburn-theme
     ;; contains errors
-    ; badger-theme
+    ;; badger-theme
     badwolf-theme
     birds-of-paradise-plus-theme
     bubbleberry-theme
@@ -27,7 +27,6 @@
     clues-theme
     color-theme-sanityinc-solarized
     color-theme-sanityinc-tomorrow
-    colorsarenice-theme
     cyberpunk-theme
     dakrone-theme
     darkburn-theme
@@ -35,10 +34,12 @@
     darkokai-theme
     darktooth-theme
     django-theme
+    doom-themes
     dracula-theme
     espresso-theme
+    exotica-theme
+    eziam-theme
     farmhouse-theme
-    firebelly-theme
     flatland-theme
     flatui-theme
     gandalf-theme
@@ -53,8 +54,10 @@
     ir-black-theme
     jazz-theme
     jbeans-theme
+    kaolin-themes
     light-soap-theme
     lush-theme
+    madhat2r-theme
     majapahit-theme
     material-theme
     minimal-theme
@@ -64,29 +67,28 @@
     monochrome-theme
     mustang-theme
     naquadah-theme
-    niflheim-theme
     noctilux-theme
     obsidian-theme
     occidental-theme
     omtose-phellack-theme
     oldlace-theme
     organic-green-theme
-    pastels-on-dark-theme
     phoenix-dark-mono-theme
     phoenix-dark-pink-theme
     planet-theme
     professional-theme
     purple-haze-theme
     railscasts-theme
+    rebecca-theme
     reverse-theme
     seti-theme
     smyx-theme
     soft-charcoal-theme
     soft-morning-theme
     soft-stone-theme
+    solarized-theme
     soothe-theme
     spacegray-theme
-    stekene-theme
     subatomic-theme
     subatomic256-theme
     sublime-themes
@@ -96,17 +98,16 @@
     tangotango-theme
     tao-theme
     ;; contains error
-    ; tommyh-theme
+    ;; tommyh-theme
     toxi-theme
-    tronesque-theme
     twilight-anti-bright-theme
     twilight-bright-theme
     twilight-theme
     ujelly-theme
     underwater-theme
+    white-sand-theme
     zen-and-art-theme
     zenburn-theme
-    zonokai-theme
     ))
 
 ;; define programmatically the init functions
