@@ -21,6 +21,7 @@
         git-link
         git-messenger
         git-timemachine
+        golden-ratio
         (helm-git-grep :requires helm)
         (helm-gitignore :requires helm)
         magit
@@ -30,6 +31,11 @@
         smeargle
         transient
         ))
+
+(defun git/pre-init-golden-ratio ()
+  (spacemacs|use-package-add-hook golden-ratio
+    :post-config
+    (add-to-list 'golden-ratio-exclude-buffer-names " *transient*")))
 
 (defun git/pre-init-evil-magit ()
   (spacemacs|use-package-add-hook magit
@@ -210,7 +216,8 @@ Press [_b_] again to blame further in the history, [_q_] to go up or quit."
         'spacemacs/magit-toggle-whitespace)
       ;; full screen magit-status
       (when git-magit-status-fullscreen
-        (setq magit-display-buffer-function 'magit-display-buffer-fullframe-status-v1))
+        (setq magit-display-buffer-function
+              'magit-display-buffer-fullframe-status-v1))
       (add-to-list 'magit-log-arguments "--color"))))
 
 (defun git/init-magit-gitflow ()
@@ -249,7 +256,8 @@ Press [_b_] again to blame further in the history, [_q_] to go up or quit."
                  ("smeargle-clear" . "clear"))))
           (dolist (nd descr)
             ;; ensure the target matches the whole string
-            (push (cons (cons nil (concat "\\`" (car nd) "\\'")) (cons nil (cdr nd)))
+            (push (cons (cons nil (concat "\\`" (car nd) "\\'"))
+                        (cons nil (cdr nd)))
                   which-key-replacement-alist))))
       (spacemacs/set-leader-keys
         "gHc" 'smeargle-clear
