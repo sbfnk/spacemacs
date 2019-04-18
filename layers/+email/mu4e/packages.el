@@ -60,6 +60,7 @@
       (evilified-state-evilify-map mu4e-main-mode-map
         :mode mu4e-main-mode
         :bindings
+        (kbd "u") 'mu4e-update-index
         (kbd "j") 'mu4e~headers-jump-to-maildir
         (kbd "C-j") 'next-line
         (kbd "C-k") 'previous-line)
