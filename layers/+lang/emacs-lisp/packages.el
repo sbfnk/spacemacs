@@ -211,6 +211,7 @@
         :status nameless-mode
         :on (nameless-mode)
         :off (nameless-mode -1)
+        :documentation "Hide package namespaces in your emacs-lisp code."
         :evil-leader-for-mode (emacs-lisp-mode . "Tn"))
       ;; activate nameless only when in a GUI
       ;; in a terminal nameless triggers all sorts of graphical glitches.
@@ -255,7 +256,7 @@
 
 (defun emacs-lisp/init-flycheck-package ()
   (use-package flycheck-package
-    :defer t))
+    :hook (emacs-lisp-mode . flycheck-package-setup)))
 
 (defun emacs-lisp/post-init-counsel-gtags ()
   (spacemacs/counsel-gtags-define-keys-for-mode 'emacs-lisp-mode))

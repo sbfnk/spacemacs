@@ -62,14 +62,6 @@
   (spacemacs/set-leader-keys-for-major-mode 'js2-mode
     "I" 'spacemacs/impatient-mode))
 
-(defun javascript/init-import-js ()
-  (use-package import-js
-    :defer t
-    :init
-    (progn
-      (add-hook 'js2-mode-hook #'run-import-js)
-      (spacemacs/import-js-set-key-bindings 'js2-mode))))
-
 (defun javascript/pre-init-org ()
   (spacemacs|use-package-add-hook org
     :post-config (add-to-list 'org-babel-load-languages '(js . t))))
@@ -92,6 +84,8 @@
                      (cons 'javascript-backend value))))
     :config
     (progn
+      (when javascript-fmt-on-save
+        (add-hook 'js2-mode-local-vars-hook 'spacemacs/javascript-fmt-before-save-hook))
       ;; prefixes
       (spacemacs/declare-prefix-for-mode 'js2-mode "mh" "documentation")
       (spacemacs/declare-prefix-for-mode 'js2-mode "mg" "goto")
@@ -177,6 +171,10 @@
 (defun javascript/pre-init-prettier-js ()
   (if (eq javascript-fmt-tool 'prettier)
       (add-to-list 'spacemacs--prettier-modes 'js2-mode)))
+
+(defun javascript/pre-init-import-js ()
+  (if (eq javascript-import-tool 'import-js)
+      (add-to-list 'spacemacs--import-js-modes (cons 'js2-mode 'js2-mode-hook))))
 
 (defun javascript/init-skewer-mode ()
   (use-package skewer-mode

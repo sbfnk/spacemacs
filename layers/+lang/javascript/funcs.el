@@ -72,31 +72,6 @@
                      "the `tern' layer is not present in your `.spacemacs'!"))))
 
 
-;; import-js
-
-(defun spacemacs/import-js-set-key-bindings (mode)
-  "Setup the key bindings for `import-js' for the given MODE."
-  (spacemacs/declare-prefix-for-mode mode "mi" "import")
-  (spacemacs/set-leader-keys-for-major-mode mode
-    "if" #'spacemacs/import-js-fix
-    "ii" #'spacemacs/import-js-import
-    "gi" #'import-js-goto))
-
-(defun spacemacs/import-js-fix ()
-  (interactive)
-  (require 'import-js)
-  (import-js-fix)
-  (if (bound-and-true-p flycheck-mode)
-      (flycheck-buffer)))
-
-(defun spacemacs/import-js-import ()
-  (interactive)
-  (require 'import-js)
-  (import-js-import)
-  (if (bound-and-true-p flycheck-mode)
-      (flycheck-buffer)))
-
-
 ;; js-doc
 
 (defun spacemacs/js-doc-require ()
@@ -155,3 +130,21 @@
   (spacemacs/skewer-eval-region beg end)
   (skewer-repl)
   (evil-insert-state))
+
+
+;; Others
+
+(defun spacemacs/javascript-format ()
+  "Call formatting tool specified in `javascript-fmt-tool'."
+  (interactive)
+  (cond
+   ((eq javascript-fmt-tool 'prettier)
+    (call-interactively 'prettier-js))
+   ((eq javascript-fmt-tool 'web-beautify)
+    (call-interactively 'web-beautify-js))
+   (t (error (concat "%s isn't valid javascript-fmt-tool value."
+                     " It should be 'web-beutify or 'prettier.")
+                     (symbol-name javascript-fmt-tool)))))
+
+(defun spacemacs/javascript-fmt-before-save-hook ()
+  (add-hook 'before-save-hook 'spacemacs/javascript-format t t))
