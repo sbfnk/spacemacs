@@ -1,6 +1,6 @@
 #+TITLE: Spacemacs documentation
 
-* Table of Contents                     :TOC_4_gh:noexport:
+* Table of Contents                     :TOC_5_gh:noexport:
 - [[#core-pillars][Core Pillars]]
   - [[#mnemonic][Mnemonic]]
   - [[#discoverable][Discoverable]]
@@ -176,6 +176,9 @@
     - [[#region-narrowing][Region narrowing]]
     - [[#replacing-text-with-iedit][Replacing text with iedit]]
       - [[#iedit-states-key-bindings][iedit states key bindings]]
+        - [[#state-transitions][State transitions]]
+        - [[#in-iedit-state][In iedit state]]
+        - [[#in-iedit-insert-state][In iedit-insert state]]
       - [[#examples][Examples]]
     - [[#replacing-text-in-several-files][Replacing text in several files]]
     - [[#renaming-files-in-a-directory][Renaming files in a directory]]
@@ -184,6 +187,8 @@
     - [[#deleting-files][Deleting files]]
     - [[#editing-lisp-code][Editing Lisp code]]
       - [[#lisp-key-bindings][Lisp Key bindings]]
+        - [[#lisp-state-key-bindings][Lisp state key bindings]]
+        - [[#emacs-lisp-specific-key-bindings][Emacs lisp specific key bindings]]
     - [[#mouse-usage][Mouse usage]]
   - [[#managing-projects][Managing projects]]
   - [[#registers][Registers]]
@@ -1542,7 +1547,7 @@ squared symbols like =🅿=.
 | ~SPC t C--~ | =⊝=     | -     | global centered cursor                                               |
 | ~SPC t a~   | =ⓐ=     | a     | auto-completion                                                      |
 | ~SPC t c~   | =ⓒ=     | c     | camel case motion with subword mode                                  |
-| =none=      | =ⓔ=     | e     | [[https://github.com/edwtjo/evil-org-mode][evil-org]] mode                                                        |
+| =none=      | =ⓔ=     | e     | [[https://github.com/Somelauw/evil-org-mode][evil-org]] mode                                                        |
 | ~SPC t E e~ | =Ⓔe=    | Ee    | emacs editing style (holy mode)                                      |
 | ~SPC t E h~ | =Ⓔh=    | Eh    | hybrid editing style (hybrid mode)                                   |
 | ~SPC t f~   | =ⓕ=     | f     | fill-column-indicator mode                                           |
@@ -2840,6 +2845,7 @@ Text related commands (start with ~x~):
 
 | Key binding   | Description                                                   |
 |---------------+---------------------------------------------------------------|
+| ~SPC x TAB~   | indent or dedent a region rigidly                             |
 | ~SPC x a &~   | align region at &                                             |
 | ~SPC x a (~   | align region at (                                             |
 | ~SPC x a )~   | align region at )                                             |
@@ -2895,7 +2901,7 @@ Text related commands (start with ~x~):
 | ~SPC x U~     | set the selected text to upper case                           |
 | ~SPC x w c~   | count the number of occurrences per word in the select region |
 | ~SPC x w d~   | show dictionary entry of word from wordnik.com                |
-| ~SPC x TAB~   | indent or dedent a region rigidly                             |
+| ~SPC x y~     | use avy to copy a link in the frame                           |
 
 *** Text insertion commands
 Text insertion commands (start with ~i~):
