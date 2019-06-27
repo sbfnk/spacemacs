@@ -23,9 +23,11 @@
                                        ("a"   "applications")
                                        ("A"   "other applications")
                                        ("b"   "buffers")
-                                       ("bN"  "new empty buffer")
+                                       ("bc"  "indirect buffers")
+                                       ("bN"  "new buffer")
                                        ("c"   "compile/comments")
                                        ("C"   "capture/colors")
+                                       ("d"   "documentation")
                                        ("e"   "errors")
                                        ("f"   "files")
                                        ("fC"  "files/convert")
@@ -149,6 +151,9 @@
   "bn"    'next-buffer
   "bm"    'spacemacs/switch-to-messages-buffer
   "b N h" 'spacemacs/new-empty-buffer-left
+  "b N C-i" 'make-indirect-buffer
+  "b N i" 'clone-indirect-buffer
+  "b N I" 'clone-indirect-buffer-other-window-without-purpose
   "b N j" 'spacemacs/new-empty-buffer-below
   "b N k" 'spacemacs/new-empty-buffer-above
   "b N l" 'spacemacs/new-empty-buffer-right
@@ -285,8 +290,9 @@
   "ij" 'spacemacs/evil-insert-line-below)
 ;; format ---------------------------------------------------------------------
 (spacemacs/set-leader-keys
-  "jo" 'open-line
+  "j(" 'check-parens
   "j=" 'spacemacs/indent-region-or-buffer
+  "jo" 'open-line
   "jS" 'spacemacs/split-and-new-line
   "jk" 'spacemacs/evil-goto-next-line-and-indent)
 
@@ -294,6 +300,7 @@
 (spacemacs/set-leader-keys
   "j0" 'spacemacs/push-mark-and-goto-beginning-of-line
   "j$" 'spacemacs/push-mark-and-goto-end-of-line
+  "jc" 'goto-last-change
   "jf" 'find-function
   "jv" 'find-variable)
 
@@ -394,7 +401,7 @@
 
 This is achieved by the built in functionality available in emacs 26 by changing
 the value of the `column-number-indicator-zero-based' variable. Functionality
-that does not take into acount `column-number-indicator-zero-based' will not
+that does not take into account `column-number-indicator-zero-based' will not
 respond to this toggle."
   :status (bound-and-true-p column-number-indicator-zero-based)
   :on (setq column-number-indicator-zero-based t)
@@ -770,13 +777,16 @@ otherwise it is scaled down."
 
 (spacemacs|define-transient-state scale-font
   :title "Font Scaling Transient State"
-  :doc "\n[_+_/_=_] scale up [_-_] scale down [_0_] reset font [_q_] quit"
+  :doc "\n[_+_/_=_/_k_] scale up [_-_/_j_] scale down [_0_] reset font [_q_] quit"
   :bindings
   ("+" spacemacs/scale-up-font)
+  ("k" spacemacs/scale-up-font)
   ("=" spacemacs/scale-up-font)
   ("-" spacemacs/scale-down-font)
+  ("j" spacemacs/scale-down-font)
   ("0" spacemacs/reset-font-size)
   ("q" nil :exit t))
+
 (spacemacs/set-leader-keys "zx" 'spacemacs/scale-font-transient-state/body)
 
 ;; end of Text Manipulation Transient State
@@ -835,11 +845,13 @@ If FRAME is nil, it defaults to the selected frame."
 
 (spacemacs|define-transient-state scale-transparency
   :title "Frame Transparency Transient State"
-  :doc "\n[_+_/_=_] increase transparency [_-_] decrease [_T_] toggle [_q_] quit"
+  :doc "\n[_+_/_=_/_k_] increase transparency [_-_/_j_] decrease [_T_] toggle [_q_] quit"
   :bindings
   ("+" spacemacs/increase-transparency)
+  ("k" spacemacs/increase-transparency)
   ("=" spacemacs/increase-transparency)
   ("-" spacemacs/decrease-transparency)
+  ("j" spacemacs/decrease-transparency)
   ("T" spacemacs/toggle-transparency)
   ("q" nil :exit t))
 (spacemacs/set-leader-keys "TT"
