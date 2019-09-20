@@ -75,6 +75,7 @@
     - [[#extra-languages][Extra languages]]
     - [[#faust][Faust]]
     - [[#gpu][Gpu]]
+    - [[#kivy][Kivy]]
     - [[#octave][Octave]]
     - [[#prolog][Prolog]]
     - [[#sql][Sql]]
@@ -140,6 +141,7 @@
       - [[#php][Php]]
       - [[#python][Python]]
       - [[#racket][Racket]]
+      - [[#reasonml][Reasonml]]
       - [[#ruby][Ruby]]
       - [[#rust][Rust]]
       - [[#scala][Scala]]
@@ -156,8 +158,10 @@
       - [[#haskell][Haskell]]
       - [[#idris][Idris]]
   - [[#utilities][Utilities]]
+    - [[#dotnet][Dotnet]]
     - [[#ipython-notebook][Ipython notebook]]
     - [[#protocol-buffers][Protocol buffers]]
+    - [[#sailfish-os-developer][Sailfish os developer]]
 - [[#readers][Readers]]
   - [[#dash][Dash]]
   - [[#deft][Deft]]
@@ -166,9 +170,7 @@
   - [[#pdf][Pdf]]
   - [[#speed-reading][Speed reading]]
 - [[#readmeorg-files-that-need-proper-tags][README.org files that need proper tags]]
-  - [[#dotnet][Dotnet]]
-  - [[#reasonml][Reasonml]]
-  - [[#sailfish-os-developer][Sailfish os developer]]
+  - [[#zig][Zig]]
 - [[#source-control][Source control]]
   - [[#git][Git]]
   - [[#github][Github]]
@@ -393,7 +395,7 @@ Features:
 ** Mu4e
 [[file:+email/mu4e/README.org][+email/mu4e/README.org]]
 
-This layer adds support for the Mu4e email client.
+This layer adds support for the =Mu4e= email client.
 
 Features:
 - Search, read, reply, move, and delete email.
@@ -401,7 +403,7 @@ Features:
 - UI optimized for speed: quick keystrokes for common actions.
 - Very extendable and customizable.
 - Integration with Helm.
-- Maildir summary using [[https://github.com/agpchil/mu4e-maildirs-extension][mu4e-mailidrs-extension]]
+- Maildir summary using [[https://github.com/agpchil/mu4e-maildirs-extension][mu4e-mailidirs-extension]]
 - Notifications using [[https://github.com/iqbalansari/mu4e-alert][mu4e-alert]]
 
 ** Notmuch
@@ -564,7 +566,7 @@ This layer adds support for Emoji emoticons from [[https://www.webpagefx.com/too
 Features:
 - Browse Emoji in a dedicated buffer
 - Display Emoji images in buffer
-- Insert one or several Emoji with an helm front-end
+- Insert one or several Emoji with a helm front-end
 - Completion of Emojis using [[https://github.com/dunn/company-emoji][company-emoji]]
 
 ** Games
@@ -1036,7 +1038,6 @@ Features:
   - Android Logcat (not associated with any file types by default)
   - Gentoo ebuilds
   - Hoon
-  - Kivy
   - MATLAB
   - QML
   - OpenScad
@@ -1080,6 +1081,14 @@ Features:
   - =.tese= (Shaders)
   - =.frag= (Shaders)
   - =.comp= (Shaders)
+
+*** Kivy
+[[file:+lang/kivy/README.org][+lang/kivy/README.org]]
+
+This layer adds support for Kivy, cross-platform GUI framework for Python.
+
+Features:
+- Syntax Highlighting
 
 *** Octave
 [[file:+lang/octave/README.org][+lang/octave/README.org]]
@@ -1634,6 +1643,9 @@ Features:
 This layer adds support for [[http://elixir-lang.org/][Elixir]].
 
 [[https://github.com/tonini/alchemist.el][Alchemist]] brings the Elixir tooling to Emacs and comes with a bunch of features.
+[[https://github.com/emacs-lsp/lsp-mode][Lsp-mode]] brings IDE like features following Language Server Protocol, through [[https://github.com/JakeBecker/elixir-ls][elixir-ls]]
+
+As Alchemist is no longer maintained, elixir-ls is a preferred solution, even though it has less features at the moment.
 
 Features:
 - Powerful IEx integration
@@ -1686,20 +1698,20 @@ Features:
 **** Go
 [[file:+lang/go/README.org][+lang/go/README.org]]
 
-This layer adds extensive support for go to Spacemacs.
+This layer adds extensive support for the [[https://golang.org][Go]] programming language.
 
 Features:
-- gofmt/goimports on file save (to enable, see [[file:+lang/go/README.org][Configuration]])
-- Auto-completion using [[https://github.com/nsf/gocode/tree/master/emacs][go-autocomplete]] (with the =auto-completion= layer)
-- Source analysis using [[https://docs.google.com/document/d/1_Y9xCEMj5S-7rv2ooHpZNH15JgRT5iM742gJkw5LtmQ][go-guru]]
+- Run [[https://golang.org/cmd/gofmt/][gofmt]] / [[https://godoc.org/golang.org/x/tools/cmd/goimports][goimports]] on file save (see [[file:+lang/go/README.org][Autoformat]])
+- Auto-completion using [[https://github.com/nsf/gocode/tree/master/emacs][go-autocomplete.el]], via the =auto-completion= layer (see [[file:+lang/go/README.org][Auto-completion]])
+- Source analysis using [[https://docs.google.com/document/d/1_Y9xCEMj5S-7rv2ooHpZNH15JgRT5iM742gJkw5LtmQ][go-guru]] (see [[file:+lang/go/README.org][Guru]])
 - Refactoring with [[http://gorefactor.org/][godoctor]]
-- Edit struct field tag with [[https://github.com/fatih/gomodifytags][gomodifytags]]
-- Linting with flycheck's built-in checkers or flycheck-gometalinter
-- Coverage profile visualization
-- Test generation with [[https://github.com/s-kostyaev/go-gen-test][go-gen-test]]
-- Get packages faster with [[https://github.com/haya14busa/gopkgs][gopkgs]]
+- Edit struct field tags with [[https://github.com/fatih/gomodifytags][gomodifytags]]
+- Linting with flycheck's built-in checkers or [[https://github.com/golangci/golangci-lint][golangci-lint]] (see [[file:+lang/go/README.org][Linting]])
+- Test generation via [[https://github.com/s-kostyaev/go-gen-test][go-gen-test]] (see [[file:+lang/go/README.org][Tests]])
+- Coverage profile visualization (see [[file:+lang/go/README.org][Coverage]])
+- List packages faster with [[https://github.com/haya14busa/gopkgs][gopkgs]]
 - Fill a structure with default values using the [[https://github.com/davidrjenni/reftools/tree/master/cmd/fillstruct][fillstruct]]
-- LSP backend
+- LSP backend (see [[file:+lang/go/README.org][LSP backend]])
 
 **** Groovy
 [[file:+lang/groovy/README.org][+lang/groovy/README.org]]
@@ -1895,6 +1907,18 @@ Features:
 - Code navigation with =gtags=
 - Structurally safe editing using optional [[https://github.com/luxbock/evil-cleverparens][evil-cleverparens]]
 
+**** Reasonml
+[[file:+lang/reasonml/README.org][+lang/reasonml/README.org]]
+
+Spacemacs layer for ReasonML, based around [[https://github.com/reasonml-editor/reason-mode][reason-mode]].
+
+Features:
+- Syntax highlighting / indentation
+- Autocomplete (via =merlin=)
+- Lint / error display (via =merlin=, and =flycheck= if =syntax-checking= layer is enabled)
+- REPL via =rtop=
+- Auto-formatting (via =refmt=)
+
 **** Ruby
 [[file:+lang/ruby/README.org][+lang/ruby/README.org]]
 
@@ -1924,6 +1948,7 @@ This layer adds support for the Scala language to Spacemacs.
 
 Features:
 - Syntax highlighting
+- Support for language backend. Either using [[https://ensime.github.io/][ENSIME]] or [[https://scalameta.org/metals/][Metals]]
 - Auto-completion
 - Syntax-checking
 - Refactoring
@@ -1933,7 +1958,6 @@ Features:
 - Eldoc integration
 - Test execution directly from Emacs
 - Automatic replacement of ASCII arrows with unicode ones
-- Automatic starting/stopping of [[https://ensime.github.io/][ENSIME]] IDE server
 
 **** Sml
 [[file:+lang/sml/README.org][+lang/sml/README.org]]
@@ -2069,6 +2093,14 @@ Features:
 - Integration of the =Idris= build system
 
 ** Utilities
+*** Dotnet
+[[file:+tools/dotnet/README.org][+tools/dotnet/README.org]]
+
+This layer adds support for the dotnet cli package.
+
+Features:
+- dotnet operations
+
 *** Ipython notebook
 [[file:+lang/ipython-notebook/README.org][+lang/ipython-notebook/README.org]]
 
@@ -2091,6 +2123,14 @@ Features:
 - Syntax checking using Flycheck (=protoc= compiler must be available)
 - Correct indentation and commenting
 - Quickly browse file contents using imenu (default key binding ~SPC j i~).
+
+*** Sailfish os developer
+[[file:+tools/sailfish-developer/README.org][+tools/sailfish-developer/README.org]]
+
+This layer adds support of sailfish-os development packages.
+
+Features:
+- [[https://github.com/vityafx/sailfish-scratchbox.el][sailfish-scratchbox]]: handy sb2 interaction.
 
 * Readers
 ** Dash
@@ -2169,33 +2209,13 @@ Features:
 - Support for =speed-reading= of arbitrary texts
 
 * README.org files that need proper tags
-** Dotnet
-[[file:+tools/dotnet/README.org][+tools/dotnet/README.org]]
+** Zig
+[[file:+lang/zig/README.org][+lang/zig/README.org]]
 
-This layer adds support for the dotnet cli package.
-
-Features:
-- dotnet operations
-
-** Reasonml
-[[file:+lang/reasonml/README.org][+lang/reasonml/README.org]]
-
-Spacemacs layer for ReasonML, based around [[https://github.com/reasonml-editor/reason-mode][reason-mode]].
+This layer adds support for the zig programming language [[https://ziglang.org/]]
 
 Features:
-- Syntax highlighting / indentation
-- Autocomplete (via =merlin=)
-- Lint / error display (via =merlin=, and =flycheck= if =syntax-checking= layer is enabled)
-- REPL via =rtop=
-- Auto-formatting (via =refmt=)
-
-** Sailfish os developer
-[[file:+tools/sailfish-developer/README.org][+tools/sailfish-developer/README.org]]
-
-This layer adds support of sailfish-os development packages.
-
-Features:
-- [[https://github.com/vityafx/sailfish-scratchbox.el][sailfish-scratchbox]]: handy sb2 interaction.
+- Syntax Highlighting
 
 * Source control
 ** Git
@@ -2221,7 +2241,6 @@ New to Magit? Checkout the [[https://magit.vc/about/][official intro]].
 This layers adds support for [[http://github.com][GitHub]].
 
 Features:
-- [[https://github.com/vermiculus/magithub][magithub]]: Magit-integrated interface to [[https://hub.github.com/][hub]] command line
 - [[https://github.com/magit/forge][forge]]: integration with various forges, such as GitHub and GitLab.
 - [[https://github.com/defunkt/gist.el][gist.el]]: full-featured mode to browse and post GitHub gists.
 - [[https://github.com/sshaw/git-link][git-link]]: quickly generate URLs for commits or files.
@@ -2817,6 +2836,7 @@ Features:
 Features:
 - adds copy support to the X-clipboard from the terminal.
 - adds paste support to the X-clipboard from the terminal.
+- [[https://github.com/redguardtoo/cliphist][cliphist]] package: integration with clipboard managers on Linux and Mac.
 
 ** Ycmd
 [[file:+tools/ycmd/README.org][+tools/ycmd/README.org]]

@@ -39,6 +39,7 @@
                                        ("h"   "help")
                                        ("hd"  "help-describe")
                                        ("hP"  "profiler")
+                                       ("hT"  "tutorials")
                                        ("i"   "insertion")
                                        ("j"   "jump/join/split")
                                        ("jj"  "avy timer")
@@ -265,6 +266,7 @@
   "FO" 'spacemacs/dired-other-frame
   "Fn" 'make-frame)
 ;; help -----------------------------------------------------------------------
+(defalias 'emacs-tutorial 'help-with-tutorial)
 (spacemacs/set-leader-keys
   "hdb" 'describe-bindings
   "hdc" 'describe-char
@@ -281,7 +283,8 @@
   "hPs" 'profiler-start
   "hPk" 'profiler-stop
   "hPr" 'profiler-report
-  "hPw" 'profiler-report-write-profile)
+  "hPw" 'profiler-report-write-profile
+  "hTe" 'emacs-tutorial)
 ;; insert stuff ---------------------------------------------------------------
 (spacemacs/set-leader-keys
   "iJ" 'spacemacs/insert-line-below-no-indent
@@ -292,6 +295,7 @@
 (spacemacs/set-leader-keys
   "j(" 'check-parens
   "j=" 'spacemacs/indent-region-or-buffer
+  "j+" 'spacemacs/iwb-region-or-buffer
   "jo" 'open-line
   "jS" 'spacemacs/split-and-new-line
   "jk" 'spacemacs/evil-goto-next-line-and-indent)
@@ -329,7 +333,7 @@
   :status truncate-lines
   :on (toggle-truncate-lines)
   :off (toggle-truncate-lines -1)
-  :documentation "Truncate long lines (no wrap)."
+  :documentation "Toggle between line wrapping or truncation (no wrap)."
   :evil-leader "tl")
 (spacemacs|add-toggle visual-line-navigation
   :status visual-line-mode
@@ -777,12 +781,13 @@ otherwise it is scaled down."
 
 (spacemacs|define-transient-state scale-font
   :title "Font Scaling Transient State"
-  :doc "\n[_+_/_=_/_k_] scale up [_-_/_j_] scale down [_0_] reset font [_q_] quit"
+  :doc "\n[_+_/_=_/_k_] scale up [_-_/___/_j_] scale down [_0_] reset font [_q_] quit"
   :bindings
   ("+" spacemacs/scale-up-font)
-  ("k" spacemacs/scale-up-font)
   ("=" spacemacs/scale-up-font)
+  ("k" spacemacs/scale-up-font)
   ("-" spacemacs/scale-down-font)
+  ("_" spacemacs/scale-down-font)
   ("j" spacemacs/scale-down-font)
   ("0" spacemacs/reset-font-size)
   ("q" nil :exit t))
@@ -845,12 +850,13 @@ If FRAME is nil, it defaults to the selected frame."
 
 (spacemacs|define-transient-state scale-transparency
   :title "Frame Transparency Transient State"
-  :doc "\n[_+_/_=_/_k_] increase transparency [_-_/_j_] decrease [_T_] toggle [_q_] quit"
+  :doc "\n[_+_/_=_/_k_] increase transparency [_-_/___/_j_] decrease [_T_] toggle [_q_] quit"
   :bindings
   ("+" spacemacs/increase-transparency)
-  ("k" spacemacs/increase-transparency)
   ("=" spacemacs/increase-transparency)
+  ("k" spacemacs/increase-transparency)
   ("-" spacemacs/decrease-transparency)
+  ("_" spacemacs/decrease-transparency)
   ("j" spacemacs/decrease-transparency)
   ("T" spacemacs/toggle-transparency)
   ("q" nil :exit t))
