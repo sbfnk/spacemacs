@@ -1395,7 +1395,7 @@ For =spacemacs=, =all-the-icons= and =custom= themes you can specify the type
 of separator you want with the property =:separator=.
 
 #+BEGIN_SRC emacs-lisp
-  (setq dotspacemacs-mode-line-theme '(all-the-icons :separator 'slant))
+  (setq dotspacemacs-mode-line-theme '(all-the-icons :separator slant))
 #+END_SRC
 
 Supported separators and preview:
@@ -1802,7 +1802,7 @@ the complete list using layer variables:
 
 ** Workspaces
 Workspaces are sub-layouts, they allow to define multiple layouts into a given
-layout, those layouts share the same buffer as the parent layout.
+layout, those layouts share the same buffers as the parent layout.
 
 The currently active workspace number is displayed before the window number,
 for instance "➊|➍" or "1|4" means the fourth window of the first workspace.
