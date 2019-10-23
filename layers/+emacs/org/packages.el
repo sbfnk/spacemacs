@@ -17,6 +17,7 @@
         evil-org
         evil-surround
         gnuplot
+        (helm-org :toggle (configuration-layer/layer-used-p 'helm))
         (helm-org-rifle :toggle (configuration-layer/layer-used-p 'helm))
         htmlize
         ;; ob, org and org-agenda are installed by `org-plus-contrib'
@@ -27,6 +28,7 @@
         (org-expiry :location built-in)
         (org-journal :toggle org-enable-org-journal-support)
         org-download
+        (org-jira :toggle org-enable-jira-support)
         org-mime
         org-pomodoro
         org-present
@@ -40,6 +42,7 @@
         (org-re-reveal :toggle org-enable-reveal-js-support)
         persp-mode
         (ox-hugo :toggle org-enable-hugo-support)
+        (ox-jira :toggle org-enable-jira-support)
         (org-trello :toggle org-enable-trello-support)
         (org-sticky-header :toggle org-enable-sticky-header)
         ))
@@ -80,6 +83,11 @@
   (use-package helm-org-rifle
     :defer t
     :init (spacemacs/set-leader-keys "aor" 'helm-org-rifle)))
+
+(defun org/init-helm-org ()
+  (use-package helm-org
+    :commands (helm-org-in-buffer-headings)
+    :defer t))
 
 (defun org/init-htmlize ()
   (use-package htmlize
@@ -125,8 +133,7 @@
 
       (with-eval-after-load 'org-indent
         (spacemacs|hide-lighter org-indent-mode))
-      (let ((dir (configuration-layer/get-layer-local-dir 'org)))
-        (setq org-export-async-init-file (concat dir "org-async-init.el")))
+
       (defmacro spacemacs|org-emphasize (fname char)
         "Make function for setting the emphasis in org mode"
         `(defun ,fname () (interactive)
@@ -239,6 +246,7 @@ Will work on both org-mode and any mode that accepts plain html."
         "sa" 'org-toggle-archive-tag
         "sA" 'org-archive-subtree
         "sb" 'org-tree-to-indirect-buffer
+        "sd" 'org-cut-subtree
         "sh" 'org-promote-subtree
         "sj" 'org-move-subtree-down
         "sk" 'org-move-subtree-up
@@ -422,6 +430,14 @@ Will work on both org-mode and any mode that accepts plain html."
         ("e" org-babel-execute-maybe :exit t)
         ("'" org-edit-special :exit t)))))
 
+(defun org/post-init-org ()
+  ;; unfold the org headings for a target line
+  ;; There's a pending upstream PR:
+  ;; Use helm-goto-char to show match and reveal outlines
+  ;; https://github.com/syohex/emacs-helm-ag/pull/304
+  ;; when/if it's accepted, then this advice can be removed.
+  (advice-add 'helm-ag--find-file-action :after #'spacemacs/org-reveal-advice))
+
 (defun org/init-org-agenda ()
   (use-package org-agenda
     :defer t
@@ -563,10 +579,13 @@ Headline^^            Visit entry^^               Filter^^                    Da
       (spacemacs/declare-prefix-for-mode 'org-mode "mBa" "add")
       (spacemacs/declare-prefix-for-mode 'org-mode "mBg" "goto")
       (spacemacs/set-leader-keys-for-major-mode 'org-mode
-        "Bac" 'org-brain-add-child
         "Bv" 'org-brain-visualize
+        "Bac" 'org-brain-add-child
+        "Bah" 'org-brain-add-child-headline
         "Bap" 'org-brain-add-parent
-        "Baf" 'org-brain-add-fiendship
+        "Bar" 'org-brain-add-resource
+        "Baf" 'org-brain-add-friendship
+        "Bgg" 'org-brain-goto
         "Bgc" 'org-brain-goto-child
         "Bgp" 'org-brain-goto-parent
         "Bgf" 'org-brain-goto-friend
@@ -598,6 +617,33 @@ Headline^^            Visit entry^^               Filter^^                    Da
         "iDy" 'org-download-yank
         "iDs" 'org-download-screenshot))))
 
+(defun org/init-org-jira ()
+  (use-package org-jira
+    :defer t
+    :init
+    (progn
+      (spacemacs/declare-prefix "aoJ" "jira")
+      (spacemacs/declare-prefix "aoJp" "projects")
+      (spacemacs/declare-prefix "aoJi" "issues")
+      (spacemacs/declare-prefix "aoJs" "subtasks")
+      (spacemacs/declare-prefix "aoJc" "comments")
+      (spacemacs/declare-prefix "aoJt" "todos")
+      (spacemacs/set-leader-keys
+        "aoJpg" 'org-jira-get-projects
+        "aoJib" 'org-jira-browse-issue
+        "aoJig" 'org-jira-get-issues
+        "aoJih" 'org-jira-get-issues-headonly
+        "aoJif" 'org-jira-get-issues-from-filter-headonly
+        "aoJiu" 'org-jira-update-issue
+        "aoJiw" 'org-jira-progress-issue
+        "aoJir" 'org-jira-refresh-issue
+        "aoJic" 'org-jira-create-issue
+        "aoJiy" 'org-jira-copy-current-issue-key
+        "aoJsc" 'org-jira-create-subtask
+        "aoJsg" 'org-jira-get-subtasks
+        "aoJcu" 'org-jira-update-comment
+        "aoJtj" 'org-jira-todo-to-jira))))
+
 (defun org/init-org-mime ()
   (use-package org-mime
     :defer t
@@ -616,6 +662,8 @@ Headline^^            Visit entry^^               Filter^^                    Da
       (when (spacemacs/system-is-mac)
         (setq org-pomodoro-audio-player "/usr/bin/afplay"))
       (spacemacs/set-leader-keys-for-major-mode 'org-mode
+        "Cp" 'org-pomodoro)
+      (spacemacs/set-leader-keys-for-major-mode 'org-journal-mode
         "Cp" 'org-pomodoro)
       (spacemacs/set-leader-keys-for-major-mode 'org-agenda-mode
         "Cp" 'org-pomodoro))))
@@ -729,6 +777,9 @@ Headline^^            Visit entry^^               Filter^^                    Da
 
 (defun org/init-ox-hugo ()
   (use-package ox-hugo :after ox))
+
+(defun org/init-ox-jira ()
+  (use-package ox-jira :after ox))
 
 (defun org/init-org-trello ()
   (use-package org-trello

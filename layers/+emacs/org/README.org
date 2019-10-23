@@ -24,6 +24,7 @@
   - [[#mode-line-support][Mode line support]]
   - [[#sticky-header-support][Sticky header support]]
   - [[#epub-support][Epub support]]
+  - [[#jira-support][Jira support]]
 - [[#key-bindings][Key bindings]]
   - [[#starting-org-mode][Starting org-mode]]
   - [[#toggles][Toggles]]
@@ -50,6 +51,7 @@
     - [[#application-bindings][Application bindings]]
     - [[#org-mode-bindings][org-mode bindings]]
     - [[#visualization-bindings][Visualization bindings]]
+  - [[#org-jira][Org-jira]]
 
 * Description
 This layer enables [[http://orgmode.org/][org mode]] for Spacemacs.
@@ -128,7 +130,7 @@ the =gnuplot= package to your =dotspacemacs-excluded-packages= variable.
 ** Reveal.js support
 To enable the export of org files as a [[http://lab.hakim.se/reveal-js/][reveal.js]] presentation - set the
 variable =org-enable-reveal-js-support= to =t=.
-This would install the [[https://github.com/yjwen/org-reveal/][org-reveal]] Emacs extension.
+This would install the [[https://gitlab.com/oer/org-re-reveal/][org-re-reveal] Emacs extension.
 
 #+BEGIN_SRC emacs-lisp
   (setq-default dotspacemacs-configuration-layers
@@ -136,13 +138,13 @@ This would install the [[https://github.com/yjwen/org-reveal/][org-reveal]] Emac
 #+END_SRC
 
 Then the extension needs to be pointed to the =reveal.js= itself.
-So [[https://github.com/hakimel/reveal.js/releases][download]] =reveal.js= and point =org-reveal-root= to the path,
-as it described in the [[https://github.com/yjwen/org-reveal#set-the-location-of-revealjs][manual]].
+So [[https://github.com/hakimel/reveal.js/releases][download]] =reveal.js= and point =org-re-reveal-root= to the path,
+as it described in the [[https://gitlab.com/oer/org-re-reveal#set-the-location-of-revealjs][manual]].
 
 Alternatively, add the following line to each =.org= file you want to process:
 
 #+BEGIN_EXAMPLE
-  #+REVEAL_ROOT: http://cdn.jsdelivr.net/reveal.js/3.0.0/
+  #+REVEAL_ROOT: https://cdn.jsdelivr.net/npm/reveal.js@3.8.0
 #+END_EXAMPLE
 
 ** Org-journal support
@@ -315,6 +317,25 @@ the variable =org-enable-epub-support= to =t=.
                        org-enable-epub-support t)))
 #+END_SRC
 
+** Jira support
+To bring Jira and OrgMode together over [[https://github.com/ahungry/org-jira][org-jira]] set the variable
+=org-enable-jira-support= to =t=.
+
+#+BEGIN_SRC emacs-lisp
+  (setq-default dotspacemacs-configuration-layers '(
+    (org :variables
+         org-enable-jira-support t
+         jiralib-url "https://yourcompany.atlassian.net:443")))
+#+END_SRC
+
+If you would like to avoid being prompted for your login and password each time
+you connect, add your authentication credentials to =~/.authinfo.gpg= or
+=~/.authinfo=:
+
+#+BEGIN_SRC authinfo
+  machine yourcompany.atlassian.net login you@example.com password yourPassword port 443
+#+END_SRC
+
 * Key bindings
 ** Starting org-mode
 
@@ -471,6 +492,7 @@ are also available.
 | ~SPC m s a~   | Toggle archive tag for subtree  |
 | ~SPC m s A~   | Archive subtree                 |
 | ~SPC m s b~   | org-tree-to-indirect-buffer     |
+| ~SPC m s d~   | org-cut-subtree                 |
 | ~SPC m s l~   | org-demote-subtree              |
 | ~SPC m s h~   | org-promote-subtree             |
 | ~SPC m s k~   | org-move-subtree-up             |
@@ -485,6 +507,8 @@ are also available.
 
 | Key binding   | Description                                   |
 |---------------+-----------------------------------------------|
+| ~C-RET~       | Insert heading at end of current subtree      |
+| ~C-S-RET~     | Insert TODO heading at end of current subtree |
 | ~SPC m i d~   | org-insert-drawer                             |
 | ~SPC m i D s~ | Take screenshot                               |
 | ~SPC m i D y~ | Yank image url                                |
@@ -722,10 +746,11 @@ org-present must be activated explicitly by typing: ~SPC SPC org-present~
 
 ** Org-journal
 
-| Key binding   | Description            |
-|---------------+------------------------|
-| ~SPC a o j j~ | New journal entry      |
-| ~SPC a o j s~ | Search journal entries |
+| Key binding         | Description                                     |
+|---------------------+-------------------------------------------------|
+| ~SPC a o j j~       | New journal entry                               |
+| ~SPC u SPC a o j j~ | Open today's journal without adding a new entry |
+| ~SPC a o j s~       | Search journal entries                          |
 
 Journal entries are highlighted in the calendar. The following key bindings are
 available for =calendar-mode= for navigating and manipulating the journal.
@@ -763,8 +788,11 @@ are available.
 | Key binding   | Description                  |
 |---------------+------------------------------|
 | ~SPC m B a c~ | Add child                    |
+| ~SPC m B a h~ | Add headline child           |
 | ~SPC m B a f~ | Add friend                   |
 | ~SPC m B a p~ | Add parent                   |
+| ~SPC m B a r~ | Add resource                 |
+| ~SPC m B g g~ | Go to an org-brain entry     |
 | ~SPC m B g c~ | Go to child                  |
 | ~SPC m B g f~ | Go to friend                 |
 | ~SPC m B g p~ | Go to parent                 |
@@ -786,3 +814,22 @@ are available.
 | ~p~         | Add parent                            |
 | ~o~         | Open and edit the visualized entry    |
 | ~r~         | Rename this, or another, entry        |
+
+** Org-jira
+
+| Key binding     | Description                                      |
+|-----------------+--------------------------------------------------|
+| ~SPC a o J p g~ | Get projects list                                |
+| ~SPC a o J i b~ | Open the current issue in a WWW browser          |
+| ~SPC a o J i g~ | Get issues                                       |
+| ~SPC a o J i h~ | Get only head of issues                          |
+| ~SPC a o J i f~ | Get only head of issues from filter              |
+| ~SPC a o J i u~ | Update an issue at point                         |
+| ~SPC a o J i w~ | Progress an issue at point                       |
+| ~SPC a o J i r~ | Refresh an issue at point                        |
+| ~SPC a o J i c~ | Create an issue at point                         |
+| ~SPC a o J i y~ | Copy current issue key                           |
+| ~SPC a o J s c~ | Create a subtask                                 |
+| ~SPC a o J s g~ | Get subtasks                                     |
+| ~SPC a o J c u~ | Update the comment at point or add a new comment |
+| ~SPC a o J t j~ | Convert the TODO item at point to a Jira ticket  |

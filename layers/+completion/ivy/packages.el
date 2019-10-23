@@ -62,6 +62,7 @@
         "fL"  'counsel-locate
         ;; help
         "?"   'counsel-descbinds
+        "gff" 'counsel-git
         "hda" 'counsel-apropos
         "hdf" 'counsel-describe-function
         "hdF" 'counsel-describe-face
@@ -191,9 +192,14 @@
       ;; Key bindings
       (spacemacs/set-leader-keys
         "a'" 'spacemacs/ivy-available-repls
+        "Ce" 'counsel-colors-emacs
+        "Cf" 'counsel-faces
+        "Cw" 'counsel-colors-web
         "fr" 'counsel-recentf
         "rl" 'ivy-resume
-        "bb" 'ivy-switch-buffer))
+        "bb" 'ivy-switch-buffer)
+      ;; Moved C-k to C-M-k
+      (define-key ivy-switch-buffer-map (kbd "C-M-k") 'ivy-switch-buffer-kill))
 
     :config
     (progn
@@ -208,6 +214,10 @@
       ;; mappings to quit minibuffer or enter transient state
       (define-key ivy-minibuffer-map [escape] 'minibuffer-keyboard-quit)
       (define-key ivy-minibuffer-map (kbd "M-SPC") 'hydra-ivy/body)
+
+      (when ivy-ret-visits-directory
+        (define-key ivy-minibuffer-map (kbd "RET") #'ivy-alt-done)
+        (define-key ivy-minibuffer-map (kbd "C-j") #'ivy-done))
 
       (ivy-mode 1)
       (global-set-key (kbd "C-c C-r") 'ivy-resume)
@@ -325,11 +335,11 @@
            '(("R" (lambda (arg)
                     (interactive)
                     (recentf-cleanup)
-                    (ivy-recentf)) "refresh list")
+                    (counsel-recentf)) "refresh list")
              ("D" (lambda (arg)
                     (interactive)
                     (setq recentf-list (delete arg recentf-list))
-                    (ivy-recentf)) "delete from list"))))
+                    (counsel-recentf)) "delete from list"))))
   ;; merge recentf and bookmarks into buffer switching. If we set this
   (setq ivy-use-virtual-buffers t))
 

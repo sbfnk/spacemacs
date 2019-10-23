@@ -89,13 +89,13 @@ commits messages. To enable this you have to add the following line to your
 #+END_SRC
 
 ** Git
-Of course if your OS does not ship with git (!) you’ll have to install it
+Of course if your OS does not ship with git (!) you'll have to install it
 on your machine. You can download it from the [[http://git-scm.com/downloads][download page]].
 
 ** Git-Flow
 Git-flow is a standardized branching pattern for git repositories with the aim
 of making things more manageable. While there are tools to assist with making
-this easier, these do nothing you couldn’t do manually.
+this easier, these do nothing you couldn't do manually.
 
 Support requires installation of the git-flow extensions. Please reference their
 [[https://github.com/petervanderdoes/gitflow/wiki][installation page]] for assistance.
@@ -203,7 +203,7 @@ A log selection buffer is presented as an interactive way of selecting a recent 
 | Key binding            | Description                                 |
 |------------------------+---------------------------------------------|
 | ~SPC m c~ or ~SPC m ,~ | select the commit at point and act on it    |
-| ~SPC m a~ or ~SPC m k~ | abort selecting and don’t act on any commit |
+| ~SPC m a~ or ~SPC m k~ | abort selecting and don't act on any commit |
 
 ** Interactive rebase buffer
 
@@ -272,12 +272,14 @@ A log selection buffer is presented as an interactive way of selecting a recent 
 These key bindings allow to quickly construct URLs pointing to a given commit
 or lines in a file hosted on Git web services like GitHub, GitLab, Bitbucket...
 
-| Key binding | Description                                                            |
-|-------------+------------------------------------------------------------------------|
-| ~SPC g l c~ | on a commit hash, browse to the current file at this commit            |
-| ~SPC g l C~ | on a commit hash, create link to the file at this commit and copy it   |
-| ~SPC g l l~ | on a region, browse to file at current lines position                  |
-| ~SPC g l L~ | on a region, create a link to the file highlighting the selected lines |
+| Key binding | Description                                                                                   |
+|-------------+-----------------------------------------------------------------------------------------------|
+| ~SPC g l c~ | on a commit hash, browse to the current file at this commit                                   |
+| ~SPC g l C~ | on a commit hash, create link to the file at this commit and copy it                          |
+| ~SPC g l l~ | on a region, browse to file at current lines position                                         |
+| ~SPC g l L~ | on a region, create a link to the file highlighting the selected lines                        |
+| ~SPC g l p~ | on a region, browse to file at current lines position (using permalink link)                  |
+| ~SPC g l P~ | on a region, create a link to the file highlighting the selected lines (using permalink link) |
 
 *Notes:*
 - You can use the universal argument ~SPC u~ to select a remote repository.
