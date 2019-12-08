@@ -54,14 +54,15 @@ If you need formatting on save:
 #+END_SRC
 
 You can choose formatting tool:
+- ='tide= (default)
+- ='prettier=
+- ='typescript-formatter=
 
 #+BEGIN_SRC emacs-lisp
   (setq-default dotspacemacs-configuration-layers '(
     (typescript :variables
                 typescript-fmt-tool 'typescript-formatter)))
 #+END_SRC
-
-Default is ='tide=.
 
 You can choose either tslint (default) or eslint for linting:
 
@@ -170,7 +171,7 @@ then set the variable =typescript-lsp-linter= to =nil=.
 | Key binding | Description                                                  |
 |-------------+--------------------------------------------------------------|
 | ~SPC m =~   | reformat the buffer                                          |
-| ~SPC m E d~ | add =tslitn-disable-next-line= at point                      |
+| ~SPC m E d~ | add =tslint:disable-next-line= at point                      |
 | ~SPC m E e~ | fix thing at point                                           |
 | ~SPC m g b~ | jump back                                                    |
 | ~SPC m g g~ | jump to entity's definition                                  |
