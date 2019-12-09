@@ -27,6 +27,7 @@
         shell-pop
         (term :location built-in)
         xterm-color
+        terminal-here
         vi-tilde-fringe
         (vterm :toggle (not (spacemacs/system-is-mswindows)))
         ))
@@ -293,6 +294,16 @@
             (remove 'ansi-color-process-output comint-output-filter-functions))
       (add-hook 'eshell-mode-hook 'spacemacs/init-eshell-xterm-color))))
 
+(defun shell/init-terminal-here ()
+  :defer t
+  :init
+  (progn
+    (spacemacs/register-repl 'terminal-here 'terminal-here)
+    (spacemacs/set-leader-keys
+      "\"" 'terminal-here-launch
+      "p \"" 'terminal-here-project-launch)
+    ))
+
 (defun shell/post-init-vi-tilde-fringe ()
   (spacemacs/add-to-hooks 'spacemacs/disable-vi-tilde-fringe
                           '(comint-mode-hook
@@ -315,9 +326,18 @@
     (progn
       (setq vterm-shell shell-default-term-shell)
 
+      (define-key vterm-mode-map (kbd "M-n") 'vterm-send-down)
+      (define-key vterm-mode-map (kbd "M-p") 'vterm-send-up)
+      (define-key vterm-mode-map (kbd "M-y") 'vterm-yank-pop)
+      (define-key vterm-mode-map (kbd "M-/") 'vterm-send-tab)
+
+      (evil-define-key 'insert vterm-mode-map (kbd "C-y") 'vterm-yank)
+
       (evil-define-key 'normal vterm-mode-map
         [escape] 'vterm--self-insert
-        [return] 'vterm--self-insert)
+        [return] 'vterm--self-insert
+        (kbd "p") 'vterm-yank
+        (kbd "u") 'vterm-undo)
 
       (add-hook 'vterm-mode-hook 'spacemacs/disable-hl-line-mode)
 
