@@ -22,6 +22,7 @@
         evil-cleverparens
         eval-sexp-fu
         flycheck
+        flycheck-elsa
         flycheck-package
         ggtags
         counsel-gtags
@@ -31,6 +32,7 @@
         nameless
         overseer
         parinfer
+        rainbow-identifiers
         semantic
         smartparens
         srefactor
@@ -263,6 +265,10 @@
   (use-package flycheck-package
     :hook (emacs-lisp-mode . flycheck-package-setup)))
 
+(defun emacs-lisp/init-flycheck-elsa ()
+  (use-package flycheck-elsa
+    :hook (emacs-lisp-mode . flycheck-elsa-setup)))
+
 (defun emacs-lisp/post-init-counsel-gtags ()
   (spacemacs/counsel-gtags-define-keys-for-mode 'emacs-lisp-mode))
 
@@ -274,6 +280,9 @@
 
 (defun emacs-lisp/post-init-parinfer ()
   (add-hook 'emacs-lisp-mode-hook 'parinfer-mode))
+
+(defun emacs-lisp/post-init-rainbow-identifiers ()
+  (add-hook 'emacs-lisp-mode-hook #'colors//rainbow-identifiers-ignore-keywords))
 
 (defun emacs-lisp/post-init-semantic ()
   (add-hook 'emacs-lisp-mode-hook 'semantic-mode)

@@ -148,29 +148,29 @@ around point as the initial input. If DIR is non nil start in
 that directory."
   (interactive)
   (require 'counsel)
-  (letf* ((initial-input (if use-initial-input
-                             (if (region-active-p)
-                                 (buffer-substring-no-properties
-                                  (region-beginning) (region-end))
-                               (thing-at-point 'symbol t))
-                           ""))
-          (tool (catch 'tool
-                  (dolist (tool tools)
-                    (when (and (assoc-string tool spacemacs--counsel-commands)
-                               (executable-find tool))
-                      (throw 'tool tool)))
-                  (throw 'tool "grep")))
-          (default-directory
-            (or initial-directory (read-directory-name "Start from directory: ")))
-          (display-directory
-           (if (< (length default-directory)
-                  spacemacs--counsel-search-max-path-length)
-               default-directory
-             (concat
-              "..." (substring default-directory
-                               (- (length default-directory)
-                                  spacemacs--counsel-search-max-path-length)
-                               (length default-directory))))))
+  (cl-letf* ((initial-input (if use-initial-input
+                                (if (region-active-p)
+                                    (buffer-substring-no-properties
+                                     (region-beginning) (region-end))
+                                  (thing-at-point 'symbol t))
+                              ""))
+             (tool (catch 'tool
+                     (dolist (tool tools)
+                       (when (and (assoc-string tool spacemacs--counsel-commands)
+                                  (executable-find tool))
+                         (throw 'tool tool)))
+                     (throw 'tool "grep")))
+             (default-directory
+               (or initial-directory (read-directory-name "Start from directory: ")))
+             (display-directory
+              (if (< (length default-directory)
+                     spacemacs--counsel-search-max-path-length)
+                  default-directory
+                (concat
+                 "..." (substring default-directory
+                                  (- (length default-directory)
+                                     spacemacs--counsel-search-max-path-length)
+                                  (length default-directory))))))
     (cond ((string= tool "ag")
            (counsel-ag initial-input default-directory nil
                        (format "ag from [%s]: " display-directory)))
@@ -337,7 +337,7 @@ To prevent this error we just wrap `describe-mode' to defeat the
           (user-error "C-c C-c can do nothing useful at this location"))
     (let* ((context (org-element-context))
            (type (org-element-type context)))
-      (case type
+      (cl-case type
         ;; When at a link, act according to the parent instead.
         (link (setq context (org-element-property :parent context))
               (setq type (org-element-type context)))
@@ -359,7 +359,7 @@ To prevent this error we just wrap `describe-mode' to defeat the
             (setq context parent type 'item))))
 
       ;; Act according to type of element or object at point.
-      (case type
+      (cl-case type
         ((headline inlinetask)
          (save-excursion (goto-char (org-element-property :begin context))
                          (call-interactively 'counsel-org-tag)) t)))))
