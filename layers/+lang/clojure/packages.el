@@ -67,6 +67,7 @@
                ("m=e" . "edn")
                ("md" . "debug")
                ("me" . "evaluation")
+               ("mep" . "pretty print")
                ("mg" . "goto")
                ("mh" . "documentation")
                ("mm" . "manage repls")
@@ -99,19 +100,26 @@
             "hj" 'cider-javadoc
             "hn" 'cider-browse-ns
             "hN" 'cider-browse-ns-all
+            "hs" 'cider-browse-spec
+            "hS" 'cider-browse-spec-all
+
 
             ;; evaluate in source code buffer
             "e;" 'cider-eval-defun-to-comment
+            "e$" 'spacemacs/cider-eval-sexp-end-of-line
             "eb" 'cider-eval-buffer
             "ee" 'cider-eval-last-sexp
             "ef" 'cider-eval-defun-at-point
             "ei" 'cider-interrupt
+            "el" 'spacemacs/cider-eval-sexp-end-of-line
             "em" 'cider-macroexpand-1
             "eM" 'cider-macroexpand-all
             "en" 'cider-ns-refresh
             "eN" 'cider-ns-reload  ;; SPC u for cider-ns-reload-all
-            "ep" 'cider-pprint-eval-defun-at-point
-            "eP" 'cider-pprint-eval-last-sexp
+            "ep;" 'cider-pprint-eval-defun-to-comment
+            "ep:" 'cider-pprint-eval-last-sexp-to-comment
+            "epf" 'cider-pprint-eval-defun-at-point
+            "epe" 'cider-pprint-eval-last-sexp
             "er" 'cider-eval-region
             "eu" 'cider-undef
             "ev" 'cider-eval-sexp-at-point
