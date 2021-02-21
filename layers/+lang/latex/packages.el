@@ -14,6 +14,8 @@
     auctex
     (auctex-latexmk :toggle (string= "LatexMk" latex-build-command))
     company
+    math-symbol-lists
+    (company-math :requires company math-symbol-lists)
     (company-auctex :requires company)
     (company-reftex :requires company)
     counsel-gtags
@@ -39,6 +41,7 @@
     :init
     (progn
       (setq TeX-command-default latex-build-command
+            TeX-engine latex-build-engine
             TeX-auto-save t
             TeX-parse-self t
             TeX-syntactic-comment t
@@ -53,7 +56,9 @@
       (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
       (add-hook 'LaTeX-mode-hook 'TeX-source-correlate-mode)
       (add-hook 'LaTeX-mode-hook 'TeX-PDF-mode)
-      (add-hook 'LaTeX-mode-hook #'spacemacs//latex-setup-backend))
+      (add-hook 'LaTeX-mode-hook #'spacemacs//latex-setup-backend)
+      (when latex-refresh-preview
+        (add-hook 'doc-view-mode-hook 'auto-revert-mode)))
     :config
     (progn
       ;; Key bindings for plain TeX
@@ -231,6 +236,14 @@
 
 (defun latex/init-lsp-latex ()
   (use-package lsp-latex
+    :defer t))
+
+(defun latex/init-math-symbol-lists ()
+  (use-package math-symbol-lists
+    :defer t))
+
+(defun latex/init-company-math ()
+  (use-package company-math
     :defer t))
 
 (defun latex/init-company-auctex ()
