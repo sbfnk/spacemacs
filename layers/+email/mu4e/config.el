@@ -1,6 +1,6 @@
 ;;; config.el --- mu4e Layer configuration File for Spacemacs
 ;;
-;; Copyright (c) 2012-2018 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
@@ -44,6 +44,12 @@
 (defvar mu4e-modes
   '(append 'mu4e-list-modes 'mu4e-view-modes)
   "Modes that are associated with mu4e buffers.")
+
+(defvar mu4e-org-link-support t
+  "If non-nil mu4e-org is configured.")
+
+(defvar mu4e-org-compose-support nil
+  "If non-nil org-mu4e is configured.")
 
 (when mu4e-installation-path
   (add-to-list 'load-path mu4e-installation-path))

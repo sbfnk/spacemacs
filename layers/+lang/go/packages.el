@@ -1,6 +1,6 @@
 ;;; packages.el --- Go Layer packages File for Spacemacs
 ;;
-;; Copyright (c) 2012-2018 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
@@ -9,29 +9,28 @@
 ;;
 ;;; License: GPLv3
 
-(setq go-packages
-      '(
-        company
-        dap-mode
-        (company-go :requires company)
-        counsel-gtags
-        eldoc
-        flycheck
-        (flycheck-golangci-lint :toggle (and go-use-golangci-lint
-                                             (configuration-layer/package-used-p
-                                              'flycheck)))
-        ggtags
-        helm-gtags
-        go-eldoc
-        go-fill-struct
-        go-gen-test
-        go-guru
-        go-impl
-        go-mode
-        go-rename
-        go-tag
-        godoctor
-        popwin))
+(defconst go-packages
+  '(
+    company
+    dap-mode
+    (company-go :requires company)
+    counsel-gtags
+    eldoc
+    flycheck
+    (flycheck-golangci-lint :toggle (and go-use-golangci-lint
+                                         (configuration-layer/package-used-p 'flycheck)))
+    ggtags
+    helm-gtags
+    go-eldoc
+    go-fill-struct
+    go-gen-test
+    go-guru
+    go-impl
+    go-mode
+    go-rename
+    go-tag
+    godoctor
+    popwin))
 
 (defun go/init-company-go ()
   (use-package company-go
@@ -45,8 +44,9 @@
   (add-hook 'go-mode-local-vars-hook #'spacemacs//go-setup-company))
 
 (defun go/pre-init-dap-mode ()
-  (add-to-list 'spacemacs--dap-supported-modes 'go-mode)
-  (add-hook 'go-mode-local-vars-hook #'spacemacs//go-setup-lsp-dap))
+  (pcase (spacemacs//go-backend)
+    (`lsp (add-to-list 'spacemacs--dap-supported-modes 'go-mode)))
+  (add-hook 'go-mode-local-vars-hook #'spacemacs//go-setup-dap))
 
 (defun go/post-init-counsel-gtags ()
   (spacemacs/counsel-gtags-define-keys-for-mode 'go-mode))
@@ -77,7 +77,7 @@
     :init (spacemacs/set-leader-keys-for-major-mode 'go-mode
             "rs" 'go-fill-struct)))
 
-(defun go/init-go-gen-test()
+(defun go/init-go-gen-test ()
   (use-package go-gen-test
     :defer t
     :init
@@ -108,13 +108,13 @@
         "fr" 'go-guru-referrers
         "fs" 'go-guru-callstack))))
 
-(defun go/init-go-impl()
+(defun go/init-go-impl ()
   (use-package go-impl
     :defer t
     :init (spacemacs/set-leader-keys-for-major-mode 'go-mode
             "ri" 'go-impl)))
 
-(defun go/init-go-mode()
+(defun go/init-go-mode ()
   (use-package go-mode
     :defer t
     :init
@@ -184,6 +184,7 @@
             "rn" 'godoctor-rename
             "rt" 'godoctor-toggle)))
 
-(defun go/post-init-popwin ()
-  (push (cons go-test-buffer-name '(:dedicated t :position bottom :stick t :noselect t :height 0.4))
-        popwin:special-display-config))
+(defun go/pre-init-popwin ()
+  (spacemacs|use-package-add-hook popwin
+    :post-config
+    (push (cons go-test-buffer-name '(:dedicated t :position bottom :stick t :noselect t :height 0.4)) popwin:special-display-config)))

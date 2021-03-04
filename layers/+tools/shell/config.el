@@ -1,6 +1,6 @@
 ;;; config.el --- shell configuration File for Spacemacs
 ;;
-;; Copyright (c) 2012-2018 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
@@ -18,7 +18,6 @@
 (setq term-char-mode-point-at-process-mark nil)
 
 ;; Variables
-
 (defvar shell-default-shell (if (spacemacs/system-is-mswindows)
                                 'eshell
                               'ansi-term)
@@ -53,3 +52,6 @@
 (defvar close-window-with-terminal nil
   "If non-nil, the window is closed when the terminal is stopped.
   This is only applied to `term' and `ansi-term' modes.")
+
+(defvar spacemacs-vterm-history-file-location nil
+  "Bash history full file name.")

@@ -1,6 +1,6 @@
 ;;; keybindings.el --- Spacemacs Defaults Layer key-bindings File
 ;;
-;; Copyright (c) 2012-2019 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
@@ -14,16 +14,22 @@
 ;; ---------------------------------------------------------------------------
 
 ;; We define prefix commands only for the sake of which-key
-(setq spacemacs/key-binding-prefixes '(("SPC" "M-x")
+(setq spacemacs/key-binding-prefixes `((,dotspacemacs-emacs-command-key "M-x")
                                        ("!"   "shell cmd")
                                        ("*"   "search project w/input")
                                        ("/"   "search project")
                                        ("?"   "show keybindings")
                                        ("a"   "applications")
-                                       ("A"   "other applications")
+                                       ("ac"   "chat")
+                                       ("ae"   "email")
+                                       ("af"   "fun")
+                                       ("ar"   "readers")
+                                       ("am"   "music")
+                                       ("at"  "tools")
+                                       ("ats"  "shells")
+                                       ("aw"  "web-services")
                                        ("c"   "compile/comments")
                                        ("C"   "capture/colors")
-                                       ("d"   "documentation")
                                        ("e"   "errors")
                                        ("g"   "git/versions-control")
                                        ("h"   "help")
@@ -175,10 +181,31 @@
    ("y" yank-rectangle "Paste last rectangle"))))
 ;; applications ---------------------------------------------------------------
 (spacemacs/set-leader-keys
-  "ac"  'calc-dispatch
+  "a*"  'calc-dispatch
   "ap"  'list-processes
   "aP"  'proced
   "au"  'undo-tree-visualize)
+;; easy pg ----------------------------------------------------------------------
+(spacemacs|spacebind
+ "Encrypt / decrypt files with Easy PG"
+ :global
+ (("a" "applications"
+   ("Y"  "easy pg"
+    ("d" epa-decrypt-file "Decrypt file to...")
+    ("D" epa-delete-keys  "Delete keys...")
+    ("e" epa-encrypt-file "Encrypt file...")
+    ("i" epa-insert-keys  "Insert keys...")
+    ("k" epa-list-keys "List keys...")
+    ("K" epa-list-secret-keys "List secret keys...")
+    ("x" epa-export-keys "Export keys...")
+    ("s"  "sign"
+     ("f" epa-sign-file "Sign file...")
+     ("m" epa-sign-mail "Sign mail...")
+     ("r" epa-sign-region "Sign region..."))
+    ("v"  "verify"
+     ("f" epa-verify-file "Verify file...")
+     ("r" epa-verify-region "Verify region...")
+     ("c" epa-verify-cleartext-in-region "Verify cleartext region..."))))))
 ;; buffers --------------------------------------------------------------------
 (spacemacs|spacebind
  "Compare buffers, files and directories."
@@ -352,7 +379,8 @@
     ("l" spacemacs/copy-file-path-with-line "File path with line number")
     ("n" spacemacs/copy-file-name "File name")
     ("N" spacemacs/copy-file-name-base "File name without extension")
-    ("y" spacemacs/copy-file-path "File path")))))
+    ("y" spacemacs/copy-file-path "File path")
+    ("b" spacemacs/copy-buffer-name "Buffer name")))))
 ;; frame ----------------------------------------------------------------------
 (spacemacs/set-leader-keys
   "Ff" 'spacemacs/find-file-other-frame
@@ -374,7 +402,8 @@
   "hdp" 'describe-package
   "hdP" 'configuration-layer/describe-package
   "hds" 'spacemacs/describe-system-info
-  "hdt" 'describe-theme
+  "hdt" 'describe-text-properties
+  "hdT" 'describe-theme
   "hdv" 'describe-variable
   "hI"  'spacemacs/report-issue
   "hn"  'view-emacs-news
@@ -412,7 +441,10 @@
   "cC" 'compile
   "ck" 'kill-compilation
   "cr" 'recompile
-  "cd" 'spacemacs/close-compilation-window)
+  "cn" 'next-error
+  "cN" 'previous-error
+  "cd" 'spacemacs/show-hide-compilation-window
+  "cb" 'spacemacs/switch-to-compilation-buffer)
 (with-eval-after-load 'compile
   (evil-define-key 'motion compilation-mode-map (kbd "gf") 'find-file-at-point)
   (define-key compilation-mode-map "r" 'recompile)
@@ -422,6 +454,9 @@
   "nr" 'narrow-to-region
   "np" 'narrow-to-page
   "nf" 'narrow-to-defun
+  "nR" 'spacemacs/narrow-to-region-indirect-buffer
+  "nP" 'spacemacs/narrow-to-page-indirect-buffer
+  "nF" 'spacemacs/narrow-to-defun-indirect-buffer
   "nw" 'widen)
 ;; toggle ---------------------------------------------------------------------
 (spacemacs|add-toggle highlight-current-line-globally
@@ -735,15 +770,15 @@ respond to this toggle."
   ("M-7" swap-buffer-window-no-follow-7)
   ("M-8" swap-buffer-window-no-follow-8)
   ("M-9" swap-buffer-window-no-follow-9)
-  ("C-1" winum-select-window-1)
-  ("C-2" winum-select-window-2)
-  ("C-3" winum-select-window-3)
-  ("C-4" winum-select-window-4)
-  ("C-5" winum-select-window-5)
-  ("C-6" winum-select-window-6)
-  ("C-7" winum-select-window-7)
-  ("C-8" winum-select-window-8)
-  ("C-9" winum-select-window-9))
+  ("C-1" spacemacs/winum-select-window-1)
+  ("C-2" spacemacs/winum-select-window-2)
+  ("C-3" spacemacs/winum-select-window-3)
+  ("C-4" spacemacs/winum-select-window-4)
+  ("C-5" spacemacs/winum-select-window-5)
+  ("C-6" spacemacs/winum-select-window-6)
+  ("C-7" spacemacs/winum-select-window-7)
+  ("C-8" spacemacs/winum-select-window-8)
+  ("C-9" spacemacs/winum-select-window-9))
 (spacemacs/set-leader-keys "b." 'spacemacs/buffer-transient-state/body)
 
 ;; end of Buffer Transient State
@@ -824,16 +859,16 @@ Select: _a_ _h_ _j_ _k_ _l_ _w_ _0_.._9_ Move: _H_ _J_ _K_ _L_ _r_ _R_ Split: _s
   ("<left>" evil-window-left)
   ("l" evil-window-right)
   ("<right>" evil-window-right)
-  ("0" winum-select-window-0)
-  ("1" winum-select-window-1)
-  ("2" winum-select-window-2)
-  ("3" winum-select-window-3)
-  ("4" winum-select-window-4)
-  ("5" winum-select-window-5)
-  ("6" winum-select-window-6)
-  ("7" winum-select-window-7)
-  ("8" winum-select-window-8)
-  ("9" winum-select-window-9)
+  ("0" spacemacs/winum-select-window-0)
+  ("1" spacemacs/winum-select-window-1)
+  ("2" spacemacs/winum-select-window-2)
+  ("3" spacemacs/winum-select-window-3)
+  ("4" spacemacs/winum-select-window-4)
+  ("5" spacemacs/winum-select-window-5)
+  ("6" spacemacs/winum-select-window-6)
+  ("7" spacemacs/winum-select-window-7)
+  ("8" spacemacs/winum-select-window-8)
+  ("9" spacemacs/winum-select-window-9)
   ("a" ace-window)
   ("o" other-frame)
   ("w" other-window)

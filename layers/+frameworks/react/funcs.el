@@ -1,6 +1,6 @@
 ;;; funcs.el --- react layer funcs file for Spacemacs. -*- lexical-binding: t -*-
 ;;
-;; Copyright (c) 2012-2018 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
 ;;
 ;; Author: Muneeb Shaikh <muneeb@reversehack.in>
 ;; URL: https://github.com/syl20bnr/spacemacs
@@ -21,9 +21,7 @@
 (defun spacemacs//react-setup-company ()
   "Conditionally setup company based on backend."
   (pcase javascript-backend
-    (`tern (spacemacs/tern-setup-tern-company 'rjsx-mode))
-    (`tide (spacemacs//tide-setup-company 'rjsx-mode))
-    (`lsp (spacemacs//react-setup-lsp-company))))
+    (`tide (spacemacs//tide-setup-company 'rjsx-mode))))
 
 (defun spacemacs//react-setup-next-error-fn ()
   "If the `syntax-checking' layer is enabled, disable `rjsx-mode''s
@@ -37,21 +35,8 @@
   (if (configuration-layer/layer-used-p 'lsp)
       (progn
         (when (not javascript-lsp-linter)
-          (setq-local lsp-diagnostic-package :none))
+          (setq-local lsp-diagnostics-provider :none))
         (lsp))
-    (message "`lsp' layer is not installed, please add `lsp' layer to your dotfile.")))
-
-(defun spacemacs//react-setup-lsp-company ()
-  "Setup lsp auto-completion."
-  (if (configuration-layer/layer-used-p 'lsp)
-      (progn
-        (spacemacs|add-company-backends
-          :backends company-lsp
-          :modes rjsx-mode
-          :variables company-minimum-prefix-length 2
-          :append-hooks nil
-          :call-hooks t)
-        (company-mode))
     (message "`lsp' layer is not installed, please add `lsp' layer to your dotfile.")))
 
 

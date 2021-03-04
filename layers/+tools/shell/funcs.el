@@ -1,6 +1,6 @@
 ;;; funcs.el --- Shell Layer functions File
 ;;
-;; Copyright (c) 2012-2018 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
@@ -74,9 +74,15 @@ SHELL is the SHELL function to use (i.e. when FUNC represents a terminal)."
          (,func ,shell)
        (shell-pop--set-shell-type
         'shell-pop-shell-type
-        (backquote (,name
-                    ,(concat "*" name "*")
-                    (lambda nil (,func ,shell)))))
+        (list ,name
+              ,(if (bound-and-true-p layouts-enable-local-variables)
+                   `(concat "*" (spacemacs//current-layout-name) "-"
+                            (if (file-remote-p default-directory)
+                                "remote-"
+                              "")
+                            ,name "*")
+                 (concat "*" name "*"))
+              (lambda nil (,func ,shell))))
        (shell-pop index)
        (spacemacs/resize-shell-to-desired-width))))
 
@@ -219,3 +225,48 @@ is achieved by adding the relevant text properties."
               (centered-cursor-mode 0))
             :append
             :local))
+
+(defun spacemacs//shell-pop-restore-window ()
+  "Fixes an issue during `shell-pop-out' where it
+tries to restore a dead buffer or window."
+  (unless (buffer-live-p shell-pop-last-buffer)
+    (setq shell-pop-last-buffer (window-buffer (get-mru-window nil t t))))
+  (unless (window-live-p shell-pop-last-window)
+    (setq shell-pop-last-window (get-buffer-window shell-pop-last-buffer))))
+
+(defun spacemacs//vterm-make-history-candidates ()
+  (with-temp-buffer
+    (insert-file-contents spacemacs-vterm-history-file-location)
+    (reverse
+     (delete-dups
+      (split-string (buffer-string) "\n")))))
+
+(defun spacemacs/helm-vterm-search-history ()
+  "Narrow down bash history with helm."
+  (interactive)
+  (assert (string-equal mode-name "VTerm") nil "Not in VTerm mode")
+  (helm :sources (helm-build-sync-source "Bash history"
+                                         :candidates (spacemacs//vterm-make-history-candidates)
+                                         :action #'vterm-send-string)
+        :buffer "*helm-bash-history*"
+        :candidate-number-limit 10000))
+
+(defun spacemacs/counsel-vterm-search-history ()
+  "Narrow down bash history with ivy."
+  (interactive)
+  (assert (string-equal mode-name "VTerm") nil "Not in VTerm mode")
+  (ivy-read "Bash history: "
+            (spacemacs//vterm-make-history-candidates)
+            :keymap counsel-describe-map
+            :preselect (ivy-thing-at-point)
+            :history 'spacemacs/counsel-shell-search-history-history
+            :require-match t
+            :action #'vterm-send-string
+            :caller 'spacemacs/counsel-vterm-search-history))
+
+(defun spacemacs//vterm-bind-m-r (mode-map)
+  (cond
+   ((configuration-layer/layer-used-p 'helm)
+    (define-key mode-map (kbd "M-r") 'spacemacs/helm-vterm-search-history))
+   ((configuration-layer/layer-used-p 'ivy)
+    (define-key mode-map (kbd "M-r") 'spacemacs/counsel-vterm-search-history))))

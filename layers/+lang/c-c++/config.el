@@ -1,6 +1,6 @@
 ;;; config.el --- C/C++ Layer config File for Spacemacs
 ;;
-;; Copyright (c) 2012-2018 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
@@ -16,7 +16,7 @@
 
 (defvar c-c++-backend nil
   "The backend to use for IDE features.
-Possible values are `lsp-ccls', `lsp-cquery', `lsp-clangd', `rtags' and `ycmd'.")
+Possible values are `lsp-ccls', `lsp-clangd', `rtags' and `ycmd'.")
 
 
 ;; lsp
@@ -33,11 +33,17 @@ Rainbow semantic highlighting gives a unique color to each identifier.")
 By default `font-lock' is used to highlight the text, set the variable to
 `overlay' if you want to use overlays. Note that overlays can be slower.")
 
-(defvar c-c++-lsp-cquery-cache-directory nil
-  "Cache directory for lsp-cquery backends.
-Can be nil, an absolute path or a relative path.
-If it is nil then the cache directory is in `spacemacs-cache-directory'.
-If it is a relative path then it is relative to the project root.")
+
+;; dap
+
+(defvar c-c++-dap-adapters '(dap-cpptools)
+  "Debug adapters to use for IDE debug features.
+
+By default only `dap-cpptools' is used.
+
+Add `dap-cpptools' for the official Microsoft C/C++ Extension for VSCode.
+Add `dap-lldb' for the official LLDB project adapter.
+Add `dap-gdb-lldb' for the WebFreak Native Debug extension.")
 
 
 ;; rtags

@@ -1,6 +1,6 @@
 ;;; core-env.el --- Spacemacs Core File
 ;;
-;; Copyright (c) 2012-2018 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
@@ -22,6 +22,7 @@
     "GPG_AGENT_INFO"
     "SSH_AGENT_PID"
     "SSH_AUTH_SOCK"
+    "DISPLAY"
     )
   "Ignored environments variables.
 Environment variables with names matching these regexps are not
@@ -41,6 +42,7 @@ current contents of the file will be overwritten."
     (with-temp-file spacemacs-env-vars-file
       (let ((shell-command-switches (cond
                                      ((or(eq system-type 'darwin)
+                                         (eq system-type 'cygwin)
                                          (eq system-type 'gnu/linux))
                                       ;; execute env twice, once with a
                                       ;; non-interactive login shell and
@@ -51,6 +53,7 @@ current contents of the file will be overwritten."
                                      ((eq system-type 'windows-nt) '("-c"))))
             (tmpfile (make-temp-file spacemacs-env-vars-file))
             (executable (cond ((or(eq system-type 'darwin)
+                                  (eq system-type 'cygwin)
                                   (eq system-type 'gnu/linux)) "env")
                               ((eq system-type 'windows-nt) "set"))))
         (insert
@@ -63,7 +66,7 @@ current contents of the file will be overwritten."
           "# regexps in `spacemacs-ignored-environment-variables'. If you add any\n"
           "# duplicate settings for a variable, only the first setting is effective.\n"
           "# PATH is a special case: all PATH settings are read, each non-duplicate\n"
-          "# directory entry is appended to the `exec-path' variable, and then PATH is\n"
+          "# directory entry is prepended to the `exec-path' variable, and then PATH is\n"
           "# set to the final value of `exec-path'.\n"
           "#\n"
           "# You can safely edit this file to change values or add or remove entries.\n"
@@ -87,7 +90,7 @@ current contents of the file will be overwritten."
           (dolist (shell-command-switch shell-command-switches)
             (call-process-shell-command
              (concat executable " > " (shell-quote-argument tmpfile)))
-            (insert-file tmpfile))
+            (insert-file-contents tmpfile))
           (delete-file tmpfile)
           ;; sort the environment variables
           (sort-regexp-fields nil "^.*$" ".*?=" env-point (point-max))

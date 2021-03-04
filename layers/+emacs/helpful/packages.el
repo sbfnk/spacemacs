@@ -1,6 +1,6 @@
 ;;; packages.el --- helpful layer packages file for Spacemacs.
 ;;
-;; Copyright (c) 2012-2017 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
 ;;
 ;; Author: Johnson Denen <johnson@johnsons-macbook-pro.local>
 ;; URL: https://github.com/syl20bnr/spacemacs
@@ -13,8 +13,7 @@
   '(
     helpful
     link-hint
-    popwin
-    ))
+    popwin))
 
 (defun helpful/init-helpful ()
   (use-package helpful
@@ -26,7 +25,10 @@
                 (spacemacs/set-leader-keys
                   "hdk" #'helpful-key
                   "hdf" #'helpful-callable
-                  "hdv" #'helpful-variable))
+                  "hdv" #'helpful-variable)
+                (global-set-key (kbd "C-h k") 'helpful-key)
+                (global-set-key (kbd "C-h f") 'helpful-callable)
+                (global-set-key (kbd "C-h v") 'helpful-variable))
               'append)
     :config
     (evil-set-initial-state 'helpful-mode 'normal)
@@ -39,6 +41,7 @@
   (with-eval-after-load 'helpful
     (evil-define-key 'normal helpful-mode-map (kbd "o") 'link-hint-open-link)))
 
-(defun helpful/post-init-popwin ()
-  (push '(helpful-mode :dedicated t :position bottom :stick t :noselect t :height 0.4)
-        popwin:special-display-config))
+(defun helpful/pre-init-popwin ()
+  (spacemacs|use-package-add-hook popwin
+    :post-config
+    (push '(helpful-mode :dedicated t :position bottom :stick t :noselect t :height 0.4) popwin:special-display-config)))

@@ -1,6 +1,6 @@
 ;;; funcs.el --- rust Layer functions File for Spacemacs
 ;;
-;; Copyright (c) 2012-2018 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
 ;;
 ;; Author: NJBS <DoNotTrackMeUsingThis@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
@@ -26,8 +26,7 @@
 (defun spacemacs//rust-setup-company ()
   "Conditionally setup company based on backend."
   (pcase (spacemacs//rust-backend)
-    (`racer (spacemacs//rust-setup-racer-company))
-    (`lsp (spacemacs//rust-setup-lsp-company))))
+    (`racer (spacemacs//rust-setup-racer-company))))
 
 (defun spacemacs//rust-setup-dap ()
   "Conditionally setup elixir DAP integration."
@@ -44,20 +43,11 @@
 (defun spacemacs//rust-setup-lsp ()
   "Setup lsp backend"
   (if (configuration-layer/layer-used-p 'lsp)
-      (progn 
+      (progn
         (lsp)
         (spacemacs/declare-prefix-for-mode 'rust-mode "ms" "switch")
         (spacemacs/set-leader-keys-for-major-mode 'rust-mode
           "ss" 'lsp-rust-switch-server))
-    (spacemacs//lsp-layer-not-installed-message)))
-
-(defun spacemacs//rust-setup-lsp-company ()
-  "Setup lsp auto-completion."
-  (if (configuration-layer/layer-used-p 'lsp)
-      (progn
-        (spacemacs|add-company-backends
-          :backends company-lsp
-          :modes rust-mode))
     (spacemacs//lsp-layer-not-installed-message)))
 
 (defun spacemacs//rust-setup-lsp-dap ()
