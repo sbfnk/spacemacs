@@ -29,6 +29,7 @@
   - [[#epub-support][Epub support]]
   - [[#jira-support][Jira support]]
   - [[#valign-support][Valign support]]
+  - [[#org-appear-support][Org-appear support]]
   - [[#verb-support][Verb support]]
   - [[#spacemacs-layout-integration][Spacemacs layout integration]]
 - [[#key-bindings][Key bindings]]
@@ -412,6 +413,14 @@ Set the variable =org-enable-valign= to =t=:
 #+END_SRC
 
 [[https://github.com/casouri/valign#valignel][Known problem: Rendering large tables (≥100 lines) is laggy.]]
+
+** Org-appear support
+To install [[https://github.com/awth13/org-appear][org-appear]], which toggles visibility of emphasis markers, links, subscripts, and superscripts in org mode, set the =org-enable-appear-support= to =t=:
+
+#+BEGIN_SRC emacs-lisp
+  (setq-default dotspacemacs-configuration-layers
+   '((org :variables org-enable-appear-support t)))
+#+END_SRC
 
 ** Verb support
 To install [[https://github.com/federicotdn/verb][Verb]], an HTTP client based on Org mode, set the
@@ -987,3 +996,4 @@ Key binding prefixes:
 | ~[prefix] r d d~ | Open daily note via calendar view     |
 | ~[prefix] r t a~ | add org-roam tag to file              |
 | ~[prefix] r t d~ | delete org-roam tag from file         |
+| ~[prefix] r a~   | add org-roam alias to file            |
