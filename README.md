@@ -1,31 +1,31 @@
 <a name="top" id="fork-destination-box"></a>
-<a href="http://spacemacs.org"><img src="https://cdn.rawgit.com/syl20bnr/spacemacs/442d025779da2f62fc86c2082703697714db6514/assets/spacemacs-badge.svg" alt="Made with Spacemacs"></a><a href="http://www.twitter.com/spacemacs"><img src="http://i.imgur.com/tXSoThF.png" alt="Twitter" align="right"></a><br>
+<a href="https://develop.spacemacs.org"><img src="https://cdn.rawgit.com/syl20bnr/spacemacs/442d025779da2f62fc86c2082703697714db6514/assets/spacemacs-badge.svg" alt="Made with Spacemacs"><a href="https://www.gnu.org/licenses/gpl-3.0.en.html"><img src="https://github.com/syl20bnr/spacemacs/blob/655e2886d88f79f4da01d607d29342e7447cad65/assets/gplv3.png" alt="GPLv3 Software" align="right" width="70" height="28"></a></a><a href="https://www.twitter.com/spacemacs"><img src="https://i.imgur.com/tXSoThF.png" alt="Twitter" align="right"></a><br>
 - - -
 <p align="center"><img src="/doc/img/title2.png" alt="Spacemacs"/></p>
 <p align="center">
-<b><a href="http://spacemacs.org/doc/DOCUMENTATION#core-pillars">philosophy</a></b>
+<b><a href="https://develop.spacemacs.org/doc/DOCUMENTATION#core-pillars">philosophy</a></b>
 |
-<b><a href="http://spacemacs.org/doc/DOCUMENTATION#who-can-benefit-from-this">for whom?</a></b>
+<b><a href="https://develop.spacemacs.org/doc/DOCUMENTATION#who-can-benefit-from-this">for whom?</a></b>
 |
-<b><a href="http://spacemacs.org/doc/DOCUMENTATION#screenshots">screenshots</a></b>
+<b><a href="https://develop.spacemacs.org/doc/DOCUMENTATION#screenshots">screenshots</a></b>
 |
-<b><a href="http://spacemacs.org/doc/DOCUMENTATION.html">documentation</a></b>
+<b><a href="https://develop.spacemacs.org/doc/DOCUMENTATION.html">documentation</a></b>
 |
 <b><a href="CONTRIBUTING.org">contribute</a></b>
 |
-<b><a href="http://spacemacs.org/doc/DOCUMENTATION#achievements">achievements</a></b>
+<b><a href="https://develop.spacemacs.org/doc/DOCUMENTATION#achievements">achievements</a></b>
 |
-<b><a href="http://spacemacs.org/doc/FAQ">FAQ</a></b>
+<b><a href="https://develop.spacemacs.org/doc/FAQ">FAQ</a></b>
 </p>
 
 - - -
 
 <p align="center">
 <a href="https://gitter.im/syl20bnr/spacemacs?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"><img src="https://badges.gitter.im/Join Chat.svg" alt="Gitter"></a>
-<a href="https://circleci.com/gh/syl20bnr/spacemacs/tree/develop"><img src="https://circleci.com/gh/syl20bnr/spacemacs/tree/develop.svg?style=shield" alt="Build Status"></a>
+<a href="https://github.com/syl20bnr/spacemacs/actions/workflows/elisp_test.yml"><img src="https://github.com/syl20bnr/spacemacs/actions/workflows/elisp_test.yml/badge.svg?branch=develop"></a>
 <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=ESFVNPKP4Y742"><img src="https://img.shields.io/badge/Paypal-Donate-blue.svg" alt="Donate"></a>
 <a href="https://shop.spreadshirt.com/spacemacs-shop"><img src="https://img.shields.io/badge/Shop-T--Shirts-blue.svg" alt="Donate"></a>
-<a href="http://www.slant.co/topics/12/~what-are-the-best-programming-text-editors"><img src="https://img.shields.io/badge/Slant-Recommend-ff69b4.svg" alt="Recommend it"></a>
+<a href="https://www.slant.co/topics/12/~what-are-the-best-programming-text-editors"><img src="https://img.shields.io/badge/Slant-Recommend-ff69b4.svg" alt="Recommend it"></a>
 </p>
 
 - - -
@@ -46,8 +46,16 @@ the [full installation instructions](#install) for other options.
   ```shell
   git clone -b develop https://github.com/syl20bnr/spacemacs ~/.emacs.d
   ```
+  * Windows Command Prompt:
+    ```shell
+    git clone -b develop https://github.com/syl20bnr/spacemacs %appdata%/.emacs.d
+    ```
 
-<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-generate-toc again -->
+    Windows PowerShell:
+    ```shell
+    git clone -b develop https://github.com/syl20bnr/spacemacs $env:appdata/.emacs.d
+    ```
+<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 **Table of Contents**
 
 - [Introduction](#introduction)
@@ -58,7 +66,16 @@ the [full installation instructions](#install) for other options.
     - [Emacs](#emacs)
         - [Linux distros](#linux-distros)
         - [macOS](#macos)
+            - [Install emacs](#install-emacs)
+                - [Using emacs-plus](#using-emacs-plus)
+                - [Using emacs-mac](#using-emacs-mac)
+                - [Using cask](#using-cask)
+                - [Other ways](#other-ways)
+            - [Install Source Code Pro font](#install-source-code-pro-font)
+            - [Install Spacemacs](#install-spacemacs)
         - [Windows](#windows)
+            - [Install Spacemacs in Windows](#install-spacemacs-in-windows)
+            - [Notes](#notes)
 - [Install](#install)
     - [Default installation](#default-installation)
     - [Alternative installations](#alternative-installations)
@@ -209,6 +226,13 @@ the default Source Code Pro font:
 
 ```sh
 brew tap homebrew/cask-fonts
+brew install --cask font-source-code-pro
+```
+
+or in older versions of homebrew
+
+```
+brew tap homebrew/cask-fonts
 brew cask install font-source-code-pro
 ```
 
@@ -229,10 +253,18 @@ packages may fail. In this case it is possible to install using
 be transferred using http, use at your own risk.
 
 You might also have some issues when doing some search on your projects, you
-probably want to install grep through homebrew with default names:
+probably want to install GNU [grep](https://formulae.brew.sh/formula/grep)
+through homebrew:
 
 ```sh
-$ brew install grep --with-default-names
+$ brew install grep
+```
+
+By default, all commands are installed with the prefix `g`. To use them with
+their normal names, you should add a `gnubin` directory to your PATH:
+
+```
+$ PATH="$(brew --prefix)/opt/grep/libexec/gnubin:$PATH"
 ```
 
 ### Windows
@@ -241,32 +273,66 @@ Download the official 64-bit (x86_64) stable builds from the [GNU FTP][emacs-for
 You'll also need `gzip` and put it in your path, to download it go to the
 [GNUWin32 project page][gzip-for-windows]
 
-Be sure to declare an environment variable named `HOME` that's pointing to your
-user directory `C:\Users\<username>`. Then you can clone Spacemacs into that
-directory.
+#### Install Spacemacs in Windows
+By default Emacs looks for the `.emacs.d` directory in:
+`C:\Users\<username>\AppData\Roaming`
 
-If the following error occurs after starting Emacs:
+* Clone Spacemacs to the Roaming directory:
+  * Windows Command Prompt
+    ```shell
+    git clone -b develop https://github.com/syl20bnr/spacemacs %appdata%/.emacs.d
+    ```
 
-```
-The directory ~/.emacs.d/server is unsafe
-```
+  * Windows PowerShell prompt:
+    ```shell
+    git clone -b develop https://github.com/syl20bnr/spacemacs $env:appdata/.emacs.d
+    ```
 
-Fix it by changing the owner of the directory `~/.emacs.d/server`:
-  - from Properties select the Tab “Security”,
-  - select the button “Advanced”,
-  - select the Tab “Owner”
-  - change the owner to your account name
+* Or if a `HOME` environment variable has been configured, that points to your
+user directory: `C:\Users\<username>`
 
-Source: [Stack Overflow][so-server-unsafe]
+  Clone Spacemacs to the `<username>` directory:
+  * Windows Command Prompt
+    ```shell
+    git clone -b develop https://github.com/syl20bnr/spacemacs %homepath%/.emacs.d
+    ```
 
-For efficient searches we recommend installing `pt` ([the platinum searcher][]).
+  * Windows PowerShell prompt:
+    ```shell
+    git clone -b develop https://github.com/syl20bnr/spacemacs $home/.emacs.d
+    ```
+
+#### Notes
+
+* If the following error occurs after starting Emacs:
+
+  ```
+  The directory ~/.emacs.d/server is unsafe
+  ```
+
+  Fix it by changing the owner of the directory `~/.emacs.d/server`:
+    - from Properties select the Tab “Security”,
+    - select the button “Advanced”,
+    - select the Tab “Owner”
+    - change the owner to your account name
+
+  Source: [Stack Overflow][so-server-unsafe]
+
+* For efficient searches we recommend installing `pt` ([the platinum searcher][]).
 `pt` version 1.7.7 or higher is required.
 
-**Notes:**
-Depending on the installed version of GnuTLS securely installing emacs
+* Depending on the installed version of GnuTLS securely installing emacs
 packages may fail. In this case it is possible to install using
 `emacs --insecure`. However be aware that this means your packages will
 be transferred using http, use at your own risk.
+
+* The period (dot) before a file or folder name, means that it's hidden.
+  To show hidden files and folders:
+  - Press the Windows key
+  - Type `file explorer options`
+  - Select the `View` tab at the top
+  - Check `Show hidden files, folders and drives`
+  - Click `OK`
 
 # Install
 ## Default installation
@@ -285,6 +351,8 @@ be transferred using http, use at your own risk.
 
 2. Clone the repository with [Git][]:
 
+   **Note: Windows users**, see the [Windows section](#install-spacemacs-in-windows) for the correct clone path.
+
    ```sh
    git clone https://github.com/syl20bnr/spacemacs ~/.emacs.d
    ```
@@ -301,17 +369,6 @@ be transferred using http, use at your own risk.
    modification to it or you will break the update mechanism. If you want to
    fork Spacemacs safely, use the `develop` branch where you'll handle updates
    manually.
-
-   **Note for Windows users**
-   If you use windows, then you'll have to modify the git command by inserting
-   the correct path to your `.emacs.d` folder. The dot before the folder means
-   that it's hidden. You'll have to search for hidden files to find the folder.
-   When you have found the folder, substitute the original path with the correct
-   one. The proper code would look something like this:
-
-   ```sh
-   git clone https://github.com/syl20bnr/spacemacs /path/to/your/.emacs.d
-   ```
 
 3. (Optional) Install the default fonts
 
@@ -405,8 +462,7 @@ lines in the `~/.emacs.d/init.el` file:
 ```
 
 ## Spacemacs logo
-For Ubuntu users, follow this guide to
-[change the logo in Unity][cpaulik-unity-icon].
+For Linux users, create `spacemacs.desktop` in `~/.local/share/applications/` using [this](https://github.com/emacs-mirror/emacs/blob/master/etc/emacs.desktop) as a reference. Change the `Name` parameter to `Name=Spacemacs` and the `Icon` parameter to `Icon=/PATH/TO/EMACSD/core/banners/img/spacemacs.png` where `PATH/TO/EMACSD` is the path to your `.emacs.d` directory, usually `~/.emacs.d` or `~/.config/emacs`.
 
 For macOS users, you need to [download the .icns version of the logo][icon-repository],
 then [change the logo on the Dock][icon-mac-instructions].
@@ -499,7 +555,7 @@ The license is GPLv3 for all parts specific to Spacemacs, this includes:
 For the packages shipped in this repository, you can refer to the files header.
 
 [Spacemacs logo][] by [Nasser Alshammari][] released under a
-[Creative Commons Attribution-ShareAlike 4.0 International License.](http://creativecommons.org/licenses/by-sa/4.0/)
+[Creative Commons Attribution-ShareAlike 4.0 International License.](https://creativecommons.org/licenses/by-sa/4.0/)
 
 # Supporting Spacemacs
 The best way to support Spacemacs is to contribute to it either by reporting
@@ -513,54 +569,54 @@ If you want to show your support financially, then you can contribute to
 [Paypal badge](#top).
 
 If you used spacemacs in a project, and you want to show that fact, you can use
-the spacemacs badge: [![Built with Spacemacs](https://cdn.rawgit.com/syl20bnr/spacemacs/442d025779da2f62fc86c2082703697714db6514/assets/spacemacs-badge.svg)](http://spacemacs.org)
+the spacemacs badge: [![Built with Spacemacs](https://cdn.rawgit.com/syl20bnr/spacemacs/442d025779da2f62fc86c2082703697714db6514/assets/spacemacs-badge.svg)](https://develop.spacemacs.org)
 
 - For Markdown:
 
    ```markdown
-   [![Built with Spacemacs](https://cdn.rawgit.com/syl20bnr/spacemacs/442d025779da2f62fc86c2082703697714db6514/assets/spacemacs-badge.svg)](http://spacemacs.org)
+   [![Built with Spacemacs](https://cdn.rawgit.com/syl20bnr/spacemacs/442d025779da2f62fc86c2082703697714db6514/assets/spacemacs-badge.svg)](https://develop.spacemacs.org)
    ```
 
 - For HTML:
 
    ```html
-   <a href="http://spacemacs.org"><img alt="Built with Spacemacs" src="https://cdn.rawgit.com/syl20bnr/spacemacs/442d025779da2f62fc86c2082703697714db6514/assets/spacemacs-badge.svg" /></a>
+   <a href="https://develop.spacemacs.org"><img alt="Built with Spacemacs" src="https://cdn.rawgit.com/syl20bnr/spacemacs/442d025779da2f62fc86c2082703697714db6514/assets/spacemacs-badge.svg" /></a>
    ```
 
 - For Org-mode:
 
    ```org
-   [[http://spacemacs.org][file:https://cdn.rawgit.com/syl20bnr/spacemacs/442d025779da2f62fc86c2082703697714db6514/assets/spacemacs-badge.svg]]
+   [[https://develop.spacemacs.org][file:https://cdn.rawgit.com/syl20bnr/spacemacs/442d025779da2f62fc86c2082703697714db6514/assets/spacemacs-badge.svg]]
    ```
 
 Thank you!
 
-[Twitter]: http://i.imgur.com/tXSoThF.png
+[Twitter]: https://i.imgur.com/tXSoThF.png
 [CONTRIBUTING.org]: CONTRIBUTING.org
-[CONVENTIONS.org]: http://spacemacs.org/doc/CONVENTIONS
-[DOCUMENTATION.org]: http://spacemacs.org/doc/DOCUMENTATION
-[QUICK_START.org]: http://spacemacs.org/doc/QUICK_START
-[FAQ.org]: http://spacemacs.org/doc/FAQ
-[VIMUSERS.org]: http://spacemacs.org/doc/VIMUSERS
-[dotfile]: http://spacemacs.org/doc/DOCUMENTATION#dotfile-configuration
-[osx layer]: http://spacemacs.org/layers/+os/osx/README.html
+[CONVENTIONS.org]: https://develop.spacemacs.org/doc/CONVENTIONS
+[DOCUMENTATION.org]: https://develop.spacemacs.org/doc/DOCUMENTATION
+[QUICK_START.org]: https://develop.spacemacs.org/doc/QUICK_START
+[FAQ.org]: https://develop.spacemacs.org/doc/FAQ
+[VIMUSERS.org]: https://develop.spacemacs.org/doc/VIMUSERS
+[dotfile]: https://develop.spacemacs.org/doc/DOCUMENTATION#dotfile-configuration
+[osx layer]: https://develop.spacemacs.org/layers/+os/osx/README.html
 [Gitter Chat]: https://gitter.im/syl20bnr/spacemacs
 [Gitter Chat IRC server]: https://irc.gitter.im/
-[Homebrew]: http://brew.sh
+[Homebrew]: https://brew.sh
 [emacs-plus]: https://github.com/d12frosted/homebrew-emacs-plus
-[powerline documentation]: http://spacemacs.org/doc/DOCUMENTATION.html#powerline-separators
+[powerline documentation]: https://develop.spacemacs.org/doc/DOCUMENTATION.html#powerline-separators
 [emacs-for-windows]: https://ftp.gnu.org/gnu/emacs/windows/
 [gzip-for-windows]: http://gnuwin32.sourceforge.net/packages/gzip.htm
 [the platinum searcher]: https://github.com/monochromegane/the_platinum_searcher
-[so-server-unsafe]: http://stackoverflow.com/questions/885793/emacs-error-when-calling-server-start
+[so-server-unsafe]: https://stackoverflow.com/questions/885793/emacs-error-when-calling-server-start
 [Spacemacs logo]: https://github.com/nashamri/spacemacs-logo
 [Nasser Alshammari]: https://github.com/nashamri
 [compilation-warnings]: https://github.com/quelpa/quelpa/issues/90#issuecomment-137982713
 [cpaulik-unity-icon]: http://splendidabacus.com/posts/2015/03/spacemacs-unity-icon/
-[icon-mac-instructions]: http://www.idownloadblog.com/2014/07/16/how-to-change-app-icon-mac/
+[icon-mac-instructions]: https://www.idownloadblog.com/2014/07/16/how-to-change-app-icon-mac/
 [latest tags]: https://github.com/syl20bnr/spacemacs/tags
 [icon-repository]: https://github.com/nashamri/spacemacs-logo
-[Stack Exchange]: http://emacs.stackexchange.com/questions/tagged/spacemacs
+[Stack Exchange]: https://emacs.stackexchange.com/questions/tagged/spacemacs
 [Reddit]: https://www.reddit.com/r/spacemacs
 [quote01]: https://gitter.im/syl20bnr/spacemacs?at=568e627a0cdaaa62045a7df6
 [quote02]: https://gitter.im/syl20bnr/spacemacs?at=5768456c6577f032450cfedb

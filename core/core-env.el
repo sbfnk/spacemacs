@@ -1,13 +1,25 @@
 ;;; core-env.el --- Spacemacs Core File
 ;;
-;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2021 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
-;;; License: GPLv3
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 
 (require 'core-dotspacemacs)
 (require 'load-env-vars)
@@ -86,7 +98,8 @@ current contents of the file will be overwritten."
           "\n"
           "# Environment variables:\n"
           "# ----------------------\n"))
-        (let ((env-point (point)))
+        (let ((process-environment initial-environment)
+              (env-point (point)))
           (dolist (shell-command-switch shell-command-switches)
             (call-process-shell-command
              (concat executable " > " (shell-quote-argument tmpfile)))

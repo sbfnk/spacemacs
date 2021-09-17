@@ -1,18 +1,29 @@
 ;;; packages.el --- Spacemacs Editing Layer packages File
 ;;
-;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2021 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
-;;; License: GPLv3
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 
 (setq spacemacs-editing-packages
       '(aggressive-indent
         avy
-        (bracketed-paste :toggle (version<= emacs-version "25.0.92"))
         (clean-aindent-mode :toggle dotspacemacs-use-clean-aindent-mode)
         dired-quick-sort
         drag-stuff
@@ -27,7 +38,7 @@
         password-generator
         (persistent-scratch :toggle dotspacemacs-scratch-buffer-persistent)
         pcre2el
-        smartparens
+        (smartparens :toggle dotspacemacs-activate-smartparens-mode)
         (evil-swap-keys :toggle dotspacemacs-swap-number-row)
         (spacemacs-whitespace-cleanup :location local)
         string-edit
@@ -89,13 +100,6 @@
           (spacemacs/avy-goto-url)
           (browse-url-at-point))))))
 
-(defun spacemacs-editing/init-bracketed-paste ()
-  (use-package bracketed-paste
-    :defer t
-    :init
-    ;; Enable bracketed-paste for tty
-    (add-hook 'tty-setup-hook 'bracketed-paste-enable)))
-
 (defun spacemacs-editing/init-clean-aindent-mode ()
   (use-package clean-aindent-mode
     :config
@@ -118,30 +122,32 @@
   (use-package drag-stuff
     :defer t
     :init
-    (drag-stuff-mode t)
-    (spacemacs|define-transient-state drag-stuff
-      :title "Drag Stuff Transient State"
-      :doc "
+    (progn
+      (spacemacs|diminish drag-stuff-mode)
+      (drag-stuff-mode t)
+      (spacemacs|define-transient-state drag-stuff
+        :title "Drag Stuff Transient State"
+        :doc "
 [_k_/_K_] up    [_h_/_H_] left   [_q_] quit
 [_j_/_J_] down  [_l_/_L_] right"
-      :bindings
-      ("j" drag-stuff-down)
-      ("J" drag-stuff-down)
-      ("<down>" drag-stuff-down)
-      ("k" drag-stuff-up)
-      ("K" drag-stuff-up)
-      ("<up>" drag-stuff-up)
-      ("h" drag-stuff-left)
-      ("H" drag-stuff-left)
-      ("<left>" drag-stuff-left)
-      ("l" drag-stuff-right)
-      ("L" drag-stuff-right)
-      ("<right>" drag-stuff-right)
-      ("q" nil :exit t))
-    (spacemacs/set-leader-keys
-      "x." 'spacemacs/drag-stuff-transient-state/body
-      "xK" 'spacemacs/drag-stuff-transient-state/drag-stuff-up
-      "xJ" 'spacemacs/drag-stuff-transient-state/drag-stuff-down)))
+        :bindings
+        ("j" drag-stuff-down)
+        ("J" drag-stuff-down)
+        ("<down>" drag-stuff-down)
+        ("k" drag-stuff-up)
+        ("K" drag-stuff-up)
+        ("<up>" drag-stuff-up)
+        ("h" drag-stuff-left)
+        ("H" drag-stuff-left)
+        ("<left>" drag-stuff-left)
+        ("l" drag-stuff-right)
+        ("L" drag-stuff-right)
+        ("<right>" drag-stuff-right)
+        ("q" nil :exit t))
+      (spacemacs/set-leader-keys
+        "x." 'spacemacs/drag-stuff-transient-state/body
+        "xK" 'spacemacs/drag-stuff-transient-state/drag-stuff-up
+        "xJ" 'spacemacs/drag-stuff-transient-state/drag-stuff-down))))
 
 (defun spacemacs-editing/init-editorconfig ()
   (use-package editorconfig
@@ -395,7 +401,7 @@
 (defun spacemacs-editing/init-smartparens ()
   (use-package smartparens
     :defer t
-    :commands (sp-split-sexp sp-newline sp-up-sexp)
+    :commands (sp-point-in-string-or-comment sp-forward-symbol sp-split-sexp sp-newline sp-up-sexp)
     :init
     (progn
       ;; settings
@@ -409,19 +415,22 @@
             sp-highlight-pair-overlay nil
             sp-highlight-wrap-overlay nil
             sp-highlight-wrap-tag-overlay nil)
-      (spacemacs/add-to-hooks (if dotspacemacs-smartparens-strict-mode
-                                  'smartparens-strict-mode
-                                'smartparens-mode)
+      (spacemacs/add-to-hooks #'spacemacs//activate-smartparens
                               '(prog-mode-hook comint-mode-hook))
       ;; enable smartparens-mode in `eval-expression'
       (add-hook 'minibuffer-setup-hook 'spacemacs//conditionally-enable-smartparens-mode)
       ;; toggles
       (spacemacs|add-toggle smartparens
-        :mode smartparens-mode
+        :status (or (bound-and-true-p smartparens-mode)
+                    (bound-and-true-p smartparens-strict-mode))
+        :on (spacemacs//activate-smartparens)
+        :off (spacemacs//deactivate-smartparens)
         :documentation "Enable smartparens."
         :evil-leader "tp")
       (spacemacs|add-toggle smartparens-globally
-        :mode smartparens-global-mode
+        :status (or smartparens-global-mode smartparens-global-strict-mode)
+        :on (spacemacs//activate-smartparens t)
+        :off (spacemacs//deactivate-smartparens t)
         :documentation "Enable smartparens globally."
         :evil-leader "t C-p")
       ;; key bindings
@@ -568,38 +577,39 @@
     :defer t
     :init
     (progn
-      (pcase dotspacemacs-swap-number-row
-        (`qwerty-us (setq evil-swap-keys-number-row-keys  '(("1" . "!")
-                                                            ("2" . "@")
-                                                            ("3" . "#")
-                                                            ("4" . "$")
-                                                            ("5" . "%")
-                                                            ("6" . "^")
-                                                            ("7" . "&")
-                                                            ("8" . "*")
-                                                            ("9" . "(")
-                                                            ("0" . ")"))))
-        (`qwertz-de (setq evil-swap-keys-number-row-keys  '(("1" . "!")
-                                                            ("2" . "\"")
-                                                            ("3" . "§")
-                                                            ("4" . "$")
-                                                            ("5" . "%")
-                                                            ("6" . "&")
-                                                            ("7" . "/")
-                                                            ("8" . "(")
-                                                            ("9" . ")")
-                                                            ("0" . "="))))
-        (`qwerty-ca-fr (setq evil-swap-keys-number-row-keys  '(("1" . "!")
-                                                               ("2" . "@")
-                                                               ("3" . "#")
-                                                               ("4" . "$")
-                                                               ("5" . "%")
-                                                               ("6" . "?")
-                                                               ("7" . "&")
-                                                               ("8" . "*")
-                                                               ("9" . "(")
-                                                               ("0" . ")"))))
-        (_ (message "dotspacemacs-swap-number-row %s is not supported." dotspacemacs-swap-number-row)))
+      (setq evil-swap-keys-number-row-keys
+            (pcase dotspacemacs-swap-number-row
+              ('qwerty-us '(("1" . "!")
+                            ("2" . "@")
+                            ("3" . "#")
+                            ("4" . "$")
+                            ("5" . "%")
+                            ("6" . "^")
+                            ("7" . "&")
+                            ("8" . "*")
+                            ("9" . "(")
+                            ("0" . ")")))
+              ('qwertz-de '(("1" . "!")
+                            ("2" . "\"")
+                            ("3" . "§")
+                            ("4" . "$")
+                            ("5" . "%")
+                            ("6" . "&")
+                            ("7" . "/")
+                            ("8" . "(")
+                            ("9" . ")")
+                            ("0" . "=")))
+              ('qwerty-ca-fr '(("1" . "!")
+                               ("2" . "@")
+                               ("3" . "#")
+                               ("4" . "$")
+                               ("5" . "%")
+                               ("6" . "?")
+                               ("7" . "&")
+                               ("8" . "*")
+                               ("9" . "(")
+                               ("0" . ")")))
+              (x (message "dotspacemacs-swap-number-row %s is not supported." x))))
       (add-hook 'prog-mode-hook #'evil-swap-keys-swap-number-row))))
 
 (defun spacemacs-editing/init-persistent-scratch ()
