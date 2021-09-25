@@ -1,16 +1,29 @@
 ;;; packages.el --- Ivy Layer packages File
 ;;
-;; Copyright (c) 2012-2020 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2021 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
-;;; License: GPLv3
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 
 (setq ivy-packages
       '(
+        (all-the-icons-ivy-rich :toggle ivy-enable-icons)
         auto-highlight-symbol
         bookmark
         counsel
@@ -22,7 +35,10 @@
         ivy
         ivy-avy
         ivy-hydra
-        (ivy-rich :toggle ivy-enable-advanced-buffer-information)
+        (ivy-rich :toggle (progn
+                            (when ivy-enable-icons
+                              (setq ivy-enable-advanced-buffer-information t))
+                            ivy-enable-advanced-buffer-information))
         (ivy-spacemacs-help :location local)
         ivy-xref
         org
@@ -33,6 +49,12 @@
         swiper
         wgrep
         ))
+
+(defun ivy/init-all-the-icons-ivy-rich ()
+  (use-package all-the-icons-ivy-rich
+    :after ivy-rich
+    :config
+    (all-the-icons-ivy-rich-mode)))
 
 (defun ivy/pre-init-auto-highlight-symbol ()
   (spacemacs|use-package-add-hook auto-highlight-symbol
@@ -69,6 +91,7 @@
         "hdF" 'counsel-describe-face
         "hdm" 'spacemacs/describe-mode
         "hdv" 'counsel-describe-variable
+        "hdx" 'spacemacs/describe-ex-command
         "hi"  'counsel-info-lookup-symbol
         "hm"  (if (spacemacs/system-is-mswindows) 'woman 'man)
         "hR"  'spacemacs/counsel-search-docs
@@ -319,7 +342,10 @@
                                              spacemacs/jump-to-definition))
 
       ;; Use ivy-xref to display `xref.el' results.
-      (setq xref-show-xrefs-function #'ivy-xref-show-xrefs))))
+      (setq xref-show-xrefs-function #'ivy-xref-show-xrefs)
+      (ivy-set-actions
+       'ivy-xref-show-xrefs
+       '(("j" spacemacs/ivy-xref-open-in-other-window "other window"))))))
 
 (defun ivy/post-init-org ()
   (add-hook 'org-ctrl-c-ctrl-c-hook 'spacemacs//counsel-org-ctrl-c-ctrl-c-org-tag))

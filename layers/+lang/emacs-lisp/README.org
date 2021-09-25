@@ -11,6 +11,7 @@
 - [[#auto-compile][Auto-compile]]
 - [[#working-with-lisp-files-barfage-slurpage--more][Working with lisp files (barfage, slurpage & more)]]
 - [[#debugging-elisp][Debugging Elisp]]
+  - [[#using-the-inspector][Using the inspector]]
 - [[#nameless][Nameless]]
   - [[#aliases][Aliases]]
 - [[#structurally-safe-editing][Structurally safe editing]]
@@ -20,6 +21,7 @@
   - [[#format-code][Format code]]
   - [[#debugging][Debugging]]
   - [[#refactoring-with-emr][Refactoring with emr]]
+  - [[#inspector][Inspector]]
 
 * Description
 This layer gathers all the configuration related to emacs-lisp. This should
@@ -107,6 +109,10 @@ displayed in the mode line.
 
 function or press ~o~ to go out of it.
 6) Press ~a~ to stop debugging.
+
+** Using the inspector
+This layer adds the [[https://github.com/mmontone/emacs-inspector][inspector]] package to provide an easy way for inspecting
+data structures. Find more information about its usage [[https://github.com/mmontone/emacs-inspector][here]] and see key bindings.
 
 * Nameless
 Nameless hides package namespaces in your emacs-lisp code, and replaces it by
@@ -255,6 +261,18 @@ mode line)
 | ~?~         | help                       |
 | ~d~         | backtrace                  |
 
+In =edebug-eval-mode=
+
+| Key binding | Description                  |
+|-------------+------------------------------|
+| ~SPC m g w~ | where                        |
+| ~SPC m a~   | delete evaluation item       |
+| ~SPC m k~   | delete evaluation item       |
+| ~SPC m ,~   | update evaluation list       |
+| ~SPC m c~   | update evaluation list       |
+| ~SPC m e e~ | evaluate last sexp           |
+| ~SPC m e E~ | evaluate last sexp and print |
+
 In =debugger-mode= (=Debugger= is displayed in major mode segment of the mode
 line)
 
@@ -294,3 +312,16 @@ line)
 | ~SPC m r d l~ | delete let binding form   |
 | ~SPC m r d d~ | delete unused definition  |
 | ~SPC m e w~   | eval and replace          |
+
+** Inspector
+*inspector buffer*
+
+| Key binding | Description                 |
+|-------------+-----------------------------|
+| ~RET~       | inspect object              |
+| ~L~         | navigate to previous object |
+| ~q~         | quit inspector              |
+
+*backtrace buffer*
+
+| ~i~ | inspect object |
