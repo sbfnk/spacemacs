@@ -1,6 +1,6 @@
 ;;; packages.el --- keyboard-layout Layer Packages File for Spacemacs
 ;;
-;; Copyright (c) 2012-2021 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2024 Sylvain Benner & Contributors
 ;;
 ;; Author: Fabien Dubosson <fabien.dubosson@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
@@ -124,7 +124,7 @@
     "Remap `ediff' bindings."
     :loader
     ;; HACK: ediff-mode-map is only defined when ediff is started
-    (add-hook 'ediff-startup-hook #'(lambda () BODY))
+    (add-hook 'ediff-startup-hook (lambda () BODY))
     :common
     (kl/correct-keys ediff-mode-map
       "h"
@@ -575,6 +575,13 @@
             "E" 'org-forward-element
             "I" 'org-backward-element
             "N" 'org-backward-heading-same-level))))
+    :dvp
+    (progn
+      (spacemacs|use-package-add-hook evil-org
+        :post-config
+        (evil-define-key 'normal evil-org-mode-map
+          "d" 'evil-backward-char
+          "j" 'evil-org-delete)))
     :neo
     (progn
       (spacemacs|use-package-add-hook evil-org

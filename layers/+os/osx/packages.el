@@ -1,6 +1,6 @@
 ;;; packages.el --- OSX Layer packages File for Spacemacs
 ;;
-;; Copyright (c) 2012-2021 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2024 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
@@ -43,8 +43,7 @@
   ;; not using GNU ls.
   (let ((gls (executable-find "gls")))
     (when gls
-      (setq insert-directory-program gls
-            dired-listing-switches "-aBhl --group-directories-first"))))
+      (setq insert-directory-program gls))))
 
 (defun osx/pre-init-helm ()
   ;; Use `mdfind' instead of `locate'.
@@ -61,32 +60,32 @@
     :if (spacemacs/system-is-mac)
     :defer t
     :init
-    (progn
-      (add-to-list 'auto-mode-alist '("\\.plist\\'" . nxml-mode))
-      (spacemacs/set-leader-keys "al" 'launchctl))
+    (add-to-list 'auto-mode-alist '("\\.plist\\'" . nxml-mode))
+    (spacemacs/set-leader-keys "al" 'launchctl)
     :config
-    (progn
-      (evilified-state-evilify launchctl-mode launchctl-mode-map
-        (kbd "q") 'quit-window
-        (kbd "s") 'tabulated-list-sort
-        (kbd "g") 'launchctl-refresh
-        (kbd "n") 'launchctl-new
-        (kbd "e") 'launchctl-edit
-        (kbd "v") 'launchctl-view
-        (kbd "l") 'launchctl-load
-        (kbd "u") 'launchctl-unload
-        (kbd "r") 'launchctl-reload
-        (kbd "S") 'launchctl-start
-        (kbd "K") 'launchctl-stop
-        (kbd "R") 'launchctl-restart
-        (kbd "D") 'launchctl-remove
-        (kbd "d") 'launchctl-disable
-        (kbd "E") 'launchctl-enable
-        (kbd "i") 'launchctl-info
-        (kbd "f") 'launchctl-filter
-        (kbd "=") 'launchctl-setenv
-        (kbd "#") 'launchctl-unsetenv
-        (kbd "h") 'launchctl-help))))
+    (evilified-state-evilify-map launchctl-mode-map
+      :mode launchctl-mode
+      :bindings
+      (kbd "q") 'quit-window
+      (kbd "s") 'tabulated-list-sort
+      (kbd "g") 'launchctl-refresh
+      (kbd "n") 'launchctl-new
+      (kbd "e") 'launchctl-edit
+      (kbd "v") 'launchctl-view
+      (kbd "l") 'launchctl-load
+      (kbd "u") 'launchctl-unload
+      (kbd "r") 'launchctl-reload
+      (kbd "S") 'launchctl-start
+      (kbd "K") 'launchctl-stop
+      (kbd "R") 'launchctl-restart
+      (kbd "D") 'launchctl-remove
+      (kbd "d") 'launchctl-disable
+      (kbd "E") 'launchctl-enable
+      (kbd "i") 'launchctl-info
+      (kbd "f") 'launchctl-filter
+      (kbd "=") 'launchctl-setenv
+      (kbd "#") 'launchctl-unsetenv
+      (kbd "h") 'launchctl-help)))
 
 (defun osx/init-osx-dictionary ()
   (use-package osx-dictionary
@@ -96,14 +95,13 @@
                osx-dictionary-search-input
                osx-dictionary-cli-find-or-recompile)
     :config
-    (progn
-      (evilified-state-evilify-map osx-dictionary-mode-map
-        :mode osx-dictionary-mode
-        :bindings
-        "q" 'osx-dictionary-quit
-        "r" 'osx-dictionary-read-word
-        "s" 'osx-dictionary-search-input
-        "o" 'osx-dictionary-open-dictionary.app))))
+    (evilified-state-evilify-map osx-dictionary-mode-map
+      :mode osx-dictionary-mode
+      :bindings
+      "q" 'osx-dictionary-quit
+      "r" 'osx-dictionary-read-word
+      "s" 'osx-dictionary-search-input
+      "o" 'osx-dictionary-open-dictionary.app)))
 
 (defun osx/init-osx-trash ()
   (use-package osx-trash
@@ -117,15 +115,14 @@
     :commands
     (osx-clipboard-paste-function osx-clipboard-cut-function)
     :init
-    (progn
-      (setq interprogram-cut-function '(lambda (text &rest ignore)
+    (setq interprogram-cut-function (lambda (text &rest ignore)
+                                      (if (display-graphic-p)
+                                          (gui-select-text text)
+                                        (osx-clipboard-cut-function text)))
+          interprogram-paste-function (lambda ()
                                         (if (display-graphic-p)
-                                            (gui-select-text text)
-                                          (osx-clipboard-cut-function text)))
-            interprogram-paste-function '(lambda ()
-                                          (if (display-graphic-p)
-                                              (gui-selection-value)
-                                            (osx-clipboard-paste-function)))))))
+                                            (gui-selection-value)
+                                          (osx-clipboard-paste-function))))))
 
 (defun osx/init-reveal-in-osx-finder ()
   (use-package reveal-in-osx-finder

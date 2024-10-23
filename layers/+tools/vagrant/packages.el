@@ -1,6 +1,6 @@
 ;;; packages.el --- Vagrant Layer packages File for Spacemacs
 ;;
-;; Copyright (c) 2012-2021 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2024 Sylvain Benner & Contributors
 ;;
 ;; Author: Brian Hicks <brian@brianthicks.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
@@ -20,35 +20,39 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-(setq vagrant-packages '(vagrant
-                         vagrant-tramp))
+(defconst vagrant-packages
+  '(vagrant
+    vagrant-tramp))
 
 (defun vagrant/init-vagrant ()
   (use-package vagrant
     :defer t
     :init
-    (progn
-      (spacemacs/declare-prefix "atv" "vagrant")
-      (spacemacs/set-leader-keys
-        "atvD" 'vagrant-destroy
-        "atve" 'vagrant-edit
-        "atvH" 'vagrant-halt
-        "atvp" 'vagrant-provision
-        "atvr" 'vagrant-resume
-        "atvR" 'vagrant-reload
-        "atvs" 'vagrant-status
-        "atvS" 'vagrant-suspend
-        "atvV" 'vagrant-up))))
+    (spacemacs/declare-prefix "atv" "vagrant")
+    (spacemacs/set-leader-keys
+      "atvD" 'vagrant-destroy
+      "atve" 'vagrant-edit
+      "atvH" 'vagrant-halt
+      "atvp" 'vagrant-provision
+      "atvr" 'vagrant-resume
+      "atvR" 'vagrant-reload
+      "atvs" 'vagrant-status
+      "atvS" 'vagrant-suspend
+      "atvV" 'vagrant-up)))
 
+(defun spacemacs/vagrant-ssh ()
+  (interactive)
+  (call-interactively (if (eq shell-default-shell 'shell)
+                          'vagrant-tramp-shell
+                        'vagrant-tramp-term)))
 (defun vagrant/init-vagrant-tramp ()
   (use-package vagrant-tramp
     :defer t
     :init
-    (progn
-      (defvar spacemacs--vagrant-tramp-loaded nil)
-      (defadvice vagrant-tramp-term (before spacemacs//load-vagrant activate)
-        "Lazy load vagrant-tramp."
-        (unless spacemacs--vagrant-tramp-loaded
-          (vagrant-tramp-add-method)
-          (setq spacemacs--vagrant-tramp-loaded t)))
-      (spacemacs/set-leader-keys "atvt" 'vagrant-tramp-term))))
+    (defvar spacemacs--vagrant-tramp-loaded nil)
+    (define-advice vagrant-tramp-term (:before (&rest _) spacemacs//load-vagrant)
+      "Lazy load vagrant-tramp."
+      (unless spacemacs--vagrant-tramp-loaded
+        (vagrant-tramp-add-method)
+        (setq spacemacs--vagrant-tramp-loaded t)))
+    (spacemacs/set-leader-keys "atvt" 'spacemacs/vagrant-ssh)))

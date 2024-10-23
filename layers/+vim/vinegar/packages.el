@@ -1,6 +1,6 @@
 ;;; packages.el --- vinegar Layer packages File for Spacemacs
 ;;
-;; Copyright (c) 2012-2021 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2024 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
@@ -32,28 +32,26 @@
   (use-package dired+
     :defer t
     :init
-    (progn
-      (setq diredp-hide-details-initially-flag t)
-      (setq diredp-hide-details-propagate-flag t)
-      ;; use single buffer for all dired navigation
-      ;; disable font themeing from dired+
-      (setq font-lock-maximum-decoration (quote ((dired-mode . 1) (t . t))))
-      (toggle-diredp-find-file-reuse-dir 1)
-      )))
+    (setq diredp-hide-details-initially-flag t)
+    (setq diredp-hide-details-propagate-flag t)
+    ;; use single buffer for all dired navigation
+    ;; disable font themeing from dired+
+    (setq font-lock-maximum-decoration (quote ((dired-mode . 1) (t . t))))
+    (toggle-diredp-find-file-reuse-dir 1)))
 
 (defun vinegar/post-init-diff-hl ()
   (use-package diff-hl
     :defer t
     :init
-    (progn
-      (add-hook 'dired-mode-hook 'diff-hl-dired-mode)
-      )))
+    (add-hook 'dired-mode-hook 'diff-hl-dired-mode)))
 
 (defun vinegar/post-init-dired ()
   (use-package dired
     :defer t
     :config
-    (evilified-state-evilify dired-mode dired-mode-map
+    (evilified-state-evilify-map dired-mode-map
+      :mode dired-mode
+      :bindings
       "j"         'vinegar/move-down
       "k"         'vinegar/move-up
       "-"         'vinegar/up-directory
@@ -62,7 +60,7 @@
       (kbd "C-j") 'dired-next-subdir
       (kbd "C-k") 'dired-prev-subdir
       "I"         'vinegar/dotfiles-toggle
-      (kbd "~")   '(lambda ()(interactive) (find-alternate-file "~/"))
+      (kbd "~")   (lambda ()(interactive) (find-alternate-file "~/"))
       (kbd "RET") (if vinegar-reuse-dired-buffer
                       'dired-find-alternate-file
                     'dired-find-file)

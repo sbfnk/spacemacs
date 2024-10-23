@@ -1,6 +1,6 @@
 ;;; config.el --- Auto-completion configuration File for Spacemacs
 ;;
-;; Copyright (c) 2012-2021 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2024 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
@@ -69,6 +69,9 @@ manually.")
 
 (defvar auto-completion-use-company-box nil
   "If non nil company-box is used.")
+
+(defvar auto-completion-use-company-posframe nil
+  "If non nil company-posframe is used.")
 
 (defvar auto-completion-private-snippets-directory nil
   "Configurable private snippets directory.")

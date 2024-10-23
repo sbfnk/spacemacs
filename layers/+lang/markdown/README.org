@@ -11,10 +11,8 @@
 - [[#install][Install]]
 - [[#configuration][Configuration]]
   - [[#live-preview][Live preview]]
-  - [[#automatic-mmm-mode-generation][Automatic MMM-Mode Generation]]
 - [[#usage][Usage]]
   - [[#generate-a-toc][Generate a TOC]]
-  - [[#editing-tables][Editing tables]]
 - [[#key-bindings][Key bindings]]
   - [[#element-insertion][Element insertion]]
   - [[#element-removal][Element removal]]
@@ -69,9 +67,6 @@ Another choice is installing =Python-Markdown=:
 If your markdown executable is not in the list, please refer the document of
 =markdown-mode= for customizing the =markdown-command=.
 
-Another alternative is to install the `github layer` and use `grip-mode` for live
-previewing, though this only supports Github flavored markdown.
-
 By default the built-in Emacs web browser is used to live preview a markdown
 buffer.
 
@@ -93,31 +88,10 @@ Additionally there is =flymd= package in =chrome= layer that allows to preview
 markdown buffer in Chrome. Please refer to =chrome= layer documentation for more
 information.
 
-** Automatic MMM-Mode Generation
-To generate MMM-Modes for languages set the value of the variable
-=markdown-mmm-auto-modes= to a list of the languages. For languages where the
-mode name directly relates to the language name, use a string. Otherwise, use a
-list of `("language" "mode")`:
-
-#+BEGIN_SRC emacs-lisp
-  dotspacemacs-configuration-layers '(
-    (markdown :variables markdown-mmm-auto-modes '("c" "c++" "python" "scala" ("elisp" "emacs-lisp"))))
-#+END_SRC
-
-*Note:* Spacemacs already defines the variable =markdown-mmm-auto-modes= to a
-bunch of languages. Consider opening a PR on the Spacemacs repository to add
-new languages instead of overriding the variable in your dotfile.
-
 * Usage
 ** Generate a TOC
 To generate a table of contents type on top of the buffer:
 ~SPC SPC markdown-toc-generate-toc RET~
-
-** Editing tables
-While =markdown-mode= provides functionality to edit tables, users of =org=
-layer benefit from more sophisticated =orgtbl-mode=.
-
-In order to use =orgtabl-mode=, add =org= layer to your =~/.spacemacs=.
 
 * Key bindings
 ** Element insertion
@@ -164,6 +138,7 @@ In order to use =orgtabl-mode=, add =org= layer to your =~/.spacemacs=.
 
 | Key binding | Description             |
 |-------------+-------------------------|
+| ~SPC m t a~ | align table             |
 | ~SPC m t p~ | move row up             |
 | ~SPC m t n~ | move row down           |
 | ~SPC m t f~ | move column right       |

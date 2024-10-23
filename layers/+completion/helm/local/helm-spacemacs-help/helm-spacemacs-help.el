@@ -170,48 +170,48 @@
 
 (defun helm-spacemacs-help//layer-source ()
   "Construct the helm source for the layer section."
-  `((name . "Layers")
-    (candidates . ,(sort (configuration-layer/get-layers-list) 'string<))
-    (candidate-number-limit)
-    (keymap . ,helm-spacemacs-help--layer-map)
-    (action . (("Open README.org"
-                . helm-spacemacs-help//layer-action-open-readme)
-               ("Open packages.el"
-                . helm-spacemacs-help//layer-action-open-packages)
-               ("Open config.el"
-                . helm-spacemacs-help//layer-action-open-config)
-               ("Open funcs.el"
-                . helm-spacemacs-help//layer-action-open-funcs)
-               ("Open layers.el"
-                . helm-spacemacs-help//layer-action-open-layers)
-               ("Install Layer"
-                . helm-spacemacs-help//layer-action-install-layer)
-               ("Open README.org (for editing)"
-                . helm-spacemacs-help//layer-action-open-readme-edit)))))
+  (helm-build-sync-source "Layers"
+    :candidates (sort (configuration-layer/get-layers-list) 'string<)
+    :candidate-number-limit 99999999
+    :keymap helm-spacemacs-help--layer-map
+    :action '(("Open README.org"
+               . helm-spacemacs-help//layer-action-open-readme)
+              ("Open packages.el"
+               . helm-spacemacs-help//layer-action-open-packages)
+              ("Open config.el"
+               . helm-spacemacs-help//layer-action-open-config)
+              ("Open funcs.el"
+               . helm-spacemacs-help//layer-action-open-funcs)
+              ("Open layers.el"
+               . helm-spacemacs-help//layer-action-open-layers)
+              ("Install Layer"
+               . helm-spacemacs-help//layer-action-install-layer)
+              ("Open README.org (for editing)"
+               . helm-spacemacs-help//layer-action-open-readme-edit))))
 
 (defvar helm-spacemacs-help--layer-map
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map helm-map)
-    (define-key map (kbd "<S-return>") '(lambda () (interactive)
-                                          ;; Add Layer
-                                          (helm-select-nth-action 3)))
-    (define-key map (kbd "<M-return>") '(lambda () (interactive)
-                                          ;; Open packages.el
-                                          (helm-select-nth-action 1)))
+    (define-key map (kbd "<S-return>") (lambda ()
+                                         "Install a layer, the current Helm candidate."
+                                         (interactive) (helm-select-nth-action 5)))
+    (define-key map (kbd "<M-return>") (lambda ()
+                                         "Open the `packages.el' file of a layer, the current Helm candidate."
+                                         (interactive) (helm-select-nth-action 1)))
     map)
   "Keymap for Spacemacs Layers sources")
 
 (defun helm-spacemacs-help//package-source ()
-  "Construct the helm source for the packages."
-  `((name . "Packages")
-    (candidates . ,(helm-spacemacs-help//package-candidates))
-    (candidate-number-limit)
-    (action . (("Go to configuration function"
-                . helm-spacemacs-help//package-action-goto-config-func)
-               ("Describe"
-                . helm-spacemacs-help//package-action-describe)
-               ("Recompile"
-                . helm-spacemacs-help//package-action-recompile)))))
+  (helm-build-sync-source "Packages"
+    :candidates (helm-spacemacs-help//package-candidates)
+    :candidate-number-limit 99999999
+    :action '(("Go to configuration function"
+               . helm-spacemacs-help//package-action-goto-config-func)
+              ("Describe"
+               . helm-spacemacs-help//package-action-describe)
+              ("Recompile"
+               . helm-spacemacs-help//package-action-recompile))))
+
 
 (defun helm-spacemacs-help//package-candidates ()
   "Return the sorted candidates for package source."
@@ -279,28 +279,43 @@
     result))
 
 (defun helm-spacemacs-help//dotspacemacs-source ()
-  `((name . "Dotfile")
-    (candidates . ,(helm-spacemacs-help//dotspacemacs-candidates))
-    (candidate-number-limit)
-    (action . (("Go to variable" . helm-spacemacs-help//go-to-dotfile-variable)))))
+  (helm-build-sync-source "Dotfile"
+    :candidates (helm-spacemacs-help//dotspacemacs-candidates)
+    :candidate-number-limit 99999999
+    :action '(("Go to variable" . helm-spacemacs-help//go-to-dotfile-variable))))
 
 (defun helm-spacemacs-help//dotspacemacs-candidates ()
   "Return the sorted candidates for all the dospacemacs variables."
   (sort (dotspacemacs/get-variable-string-list) 'string<))
 
+(defun helm-spacemacs-help//layer-action-get-directory (candidate)
+  "Get directory of layer passed CANDIDATE."
+  (configuration-layer/get-layer-path (intern candidate)))
+
 (defun helm-spacemacs-help//layer-action-open-file
     (file candidate &optional edit)
-  "Open FILE of the passed CANDIDATE.  If EDIT is false, open in view mode."
-  (let ((path (configuration-layer/get-layer-path (intern candidate))))
-    (if (and (equal (file-name-extension file) "org")
-             (not helm-current-prefix-arg))
-        (if edit
-            (find-file (concat path file))
-          (spacemacs/view-org-file (concat path file) "^" 'all))
-      (let ((filepath (concat path file)))
-        (if (file-exists-p filepath)
-            (find-file filepath)
-          (message "%s does not have %s" candidate file))))))
+  "Open FILE of the passed CANDIDATE.
+If the file does not exist and EDIT is true, create it; otherwise fall back
+to opening dired at the layer directory.
+If EDIT is false, and unless given a prefix argument,
+open org files in view mode."
+  (let* ((path (configuration-layer/get-layer-path (intern candidate)))
+         (filepath (concat path file)))
+    (cond ((and (equal (file-name-extension file) "org")
+                (not edit)
+                (not helm-current-prefix-arg)
+                (file-exists-p filepath))
+           (spacemacs/view-org-file filepath "^" 'all))
+          ((or edit (file-exists-p filepath))
+           (find-file filepath))
+          (t
+           (message "%s does not have %s" candidate file)
+           (helm-spacemacs-help//layer-action-open-dired candidate)))))
+
+(defun helm-spacemacs-help//layer-action-open-dired (candidate)
+  "Open dired at the location of the passed layer CANDIDATE."
+  (dired
+   (helm-spacemacs-help//layer-action-get-directory candidate)))
 
 (defun helm-spacemacs-help//layer-action-open-readme (candidate)
   "Open the `README.org' file of the passed CANDIDATE for reading."

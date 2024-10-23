@@ -79,11 +79,9 @@ changes.
 See [[https://github.com/bmag/emacs-purpose/wiki][window-purpose wiki]] to learn more about window-purpose.
 
 ** Allocate purposes in layers
-Layers can allocated buffers, which have been created by their
-packages, to certain purposes. This can either be done
-by a simple mode mapping or according to the buffer's name.
-This follows the same idea as the autocomplete and
-syntax-checking layers.
+Layers may assign purposes to buffers that have been created by their packages.
+This can either be done by a simple mode mapping or according to the buffer's
+name. This follows the same idea as the autocomplete and syntax-checking layers.
 
 This means the configuration is not centralised in this layer but
 spread among the individual language layers. To ensure
@@ -135,7 +133,8 @@ This can easily be achieved by adding below code in
 |-------------+-------------------------------------------------------------------------------------|
 | ~SPC r b~   | Open a buffer. Only buffers with the same purpose as the current buffer are listed. |
 | ~SPC r B~   | Open any buffer and ignore window-purpose when displaying the buffer.               |
-| ~SPC r d~   | Toggle dedication of selected window to its current purpose.                        |
+| ~SPC r d b~ | Toggle dedication of selected window to its current buffer purpose.                 |
+| ~SPC r d w~ | Toggle dedication of selected window to its current purpose.                        |
 | ~SPC r D~   | Delete all non-dedicated windows.                                                   |
 | ~SPC r p~   | Choose a purpose and open a buffer with that purpose.                               |
 | ~SPC r P~   | Change the purpose of the selected window. Changes the window's buffer accordingly. |

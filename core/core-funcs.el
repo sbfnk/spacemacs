@@ -1,6 +1,6 @@
-;;; core-funcs.el --- Spacemacs Core File
+;;; core-funcs.el --- Spacemacs Core File -*- lexical-binding: t -*-
 ;;
-;; Copyright (c) 2012-2021 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2024 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
@@ -20,9 +20,6 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
-(defvar configuration-layer--protected-packages)
-(defvar dotspacemacs-filepath)
 (defvar spacemacs-repl-list '()
   "List of all registered REPLs.")
 
@@ -33,8 +30,11 @@ values."
 
 (defun spacemacs/system-is-mac ()
   (eq system-type 'darwin))
+
 (defun spacemacs/system-is-linux ()
-  (eq system-type 'gnu/linux))
+  (or  (eq system-type 'gnu/linux)
+       (eq system-type 'android)))
+
 (defun spacemacs/system-is-mswindows ()
   (eq system-type 'windows-nt))
 
@@ -94,14 +94,14 @@ and its values are removed."
       (push (pop tail) result))
     (nreverse result)))
 
-;; Originally based on http://stackoverflow.com/questions/2321904/elisp-how-to-save-data-in-a-file
+;; Originally based on https://stackoverflow.com/a/2322164
 (defun spacemacs/dump-vars-to-file (varlist filename)
   "simplistic dumping of variables in VARLIST to a file FILENAME"
   (with-temp-file filename
     (spacemacs/dump-vars varlist (current-buffer))
     (make-directory (file-name-directory filename) t)))
 
-;; From http://stackoverflow.com/questions/2321904/elisp-how-to-save-data-in-a-file
+;; From https://stackoverflow.com/a/2322164
 (defun spacemacs/dump-vars (varlist buffer)
   "insert into buffer the setq statement to recreate the variables in VARLIST"
   (cl-loop for var in varlist do
@@ -163,7 +163,7 @@ The buffer's major mode should be `org-mode'."
   (if (require 'space-doc nil t)
       (space-doc-mode)
     ;; Make ~SPC ,~ work, reference:
-    ;; http://stackoverflow.com/questions/24169333/how-can-i-emphasize-or-verbatim-quote-a-comma-in-org-mode
+    ;; https://stackoverflow.com/a/24173780
     (setcar (nthcdr 2 org-emphasis-regexp-components) " \t\n")
     (org-set-emph-re 'org-emphasis-regexp-components org-emphasis-regexp-components)
     (setq-local org-emphasis-alist '(("*" bold)
@@ -305,7 +305,7 @@ buffer."
           . (,feature . ,repl-func))
         spacemacs-repl-list))
 
-;; http://stackoverflow.com/questions/11847547/emacs-regexp-count-occurrences
+;; https://stackoverflow.com/a/11848341
 (defun spacemacs/how-many-str (regexp str)
   (cl-loop with start = 0
            for count from 0
@@ -319,36 +319,36 @@ buffer."
   (let ((message-log-max nil))
     (apply 'message msg args)))
 
-(defun spacemacs/derived-mode-p (mode &rest modes)
-  "Non-nil if MODE is derived from one of MODES."
-  ;; We could have copied the built-in `derived-mode-p' and modified it a bit so
-  ;; it works on arbitrary modes instead of only the current major-mode. We
-  ;; don't do that because then we will need to modify the function if
-  ;; `derived-mode-p' changes.
-  (let ((major-mode mode))
-    (apply #'derived-mode-p modes)))
+(define-obsolete-function-alias 'spacemacs/derived-mode-p 'provided-mode-derived-p "2024-06")
 
 (defun spacemacs/alternate-buffer (&optional window)
-  "Switch back and forth between current and last buffer in the
-current window.
+  "Switch back and forth between current and last buffer in WINDOW.
 
-If `spacemacs-layouts-restrict-spc-tab' is `t' then this only switches between
-the current layouts buffers."
+WINDOW defaults to the selected window.
+
+If `spacemacs-layouts-restrict-spc-tab' is non-nil, then this
+only switches between the current layout's buffers."
   (interactive)
   (cl-destructuring-bind (buf start pos)
-      (if (bound-and-true-p spacemacs-layouts-restrict-spc-tab)
-          (let ((buffer-list (persp-buffer-list))
-                (my-buffer (window-buffer window)))
-            ;; find buffer of the same persp in window
-            (seq-find (lambda (it) ;; predicate
-                        (and (not (eq (car it) my-buffer))
-                             (member (car it) buffer-list)))
-                      (window-prev-buffers)
-                      ;; default if found none
-                      (list nil nil nil)))
-        (or (cl-find (window-buffer window) (window-prev-buffers)
-                     :key #'car :test-not #'eq)
-            (list (other-buffer) nil nil)))
+      (let ((my-buffer (window-buffer window))
+            (usefulp (or (symbol-function 'spacemacs/useful-buffer-p) #'always))
+            (predicate #'always)
+            (default (list (other-buffer) nil nil)))
+
+        (when (bound-and-true-p spacemacs-layouts-restrict-spc-tab)
+          (let ((buffer-list (persp-buffer-list)))
+            ;; find buffer of the same persp in window, and don't try
+            ;; `other-buffer'
+            (setq predicate (lambda (buffer) (member buffer buffer-list))
+                  default (list nil nil nil))))
+
+        (seq-find (lambda (it)
+                    (let ((buffer (car it)))
+                      (and (not (eq buffer my-buffer))
+                           (funcall usefulp buffer)
+                           (funcall predicate buffer))))
+                  (window-prev-buffers window)
+                  default))
     (if (not buf)
         (message "Last buffer not found.")
       (set-window-buffer-start-and-point window buf start pos))))

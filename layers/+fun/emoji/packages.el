@@ -1,6 +1,6 @@
 ;;; packages.el --- emoji Layer Packages File for Spacemacs
 ;;
-;; Copyright (c) 2012-2021 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2024 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
@@ -33,13 +33,12 @@
                emoji-cheat-sheet-plus-buffer
                emoji-cheat-sheet-plus-display-mode)
     :init
-    (progn
-      (spacemacs/set-leader-keys "afe" 'emoji-cheat-sheet-plus-buffer)
-      (spacemacs/set-leader-keys "ie" 'emoji-cheat-sheet-plus-insert)
-      (evilified-state-evilify emoji-cheat-sheet-plus-buffer-mode
-        emoji-cheat-sheet-plus-buffer-mode-map
-        "<RET>" 'emoji-cheat-sheet-plus-echo-and-copy))
+    (spacemacs/set-leader-keys "afe" 'emoji-cheat-sheet-plus-buffer)
+    (spacemacs/set-leader-keys "ie" 'emoji-cheat-sheet-plus-insert)
     :config
+    (evilified-state-evilify-map emoji-cheat-sheet-plus-buffer-mode-map
+      :mode emoji-cheat-sheet-plus-buffer-mode
+      :bindings "<RET>" 'emoji-cheat-sheet-plus-echo-and-copy)
     (spacemacs|hide-lighter emoji-cheat-sheet-plus-display-mode)))
 
 (defun emoji/init-emojify ()
@@ -52,14 +51,13 @@
   (use-package company-emoji
     :defer t
     :init
-    (progn
-      ;; For when Emacs is started in GUI mode:
-      (spacemacs//set-emoji-font nil)
-      ;; Hook for when a frame is created with emacsclient
-      (spacemacs|do-after-display-system-init
-       (spacemacs//set-emoji-font-for-current-frame))
-      (spacemacs|add-company-backends
-        :backends company-emoji
-        :modes text-mode))
+    ;; For when Emacs is started in GUI mode:
+    (spacemacs//set-emoji-font nil)
+    ;; Hook for when a frame is created with emacsclient
+    (spacemacs|do-after-display-system-init
+     (spacemacs//set-emoji-font-for-current-frame))
+    (spacemacs|add-company-backends
+     :backends company-emoji
+     :modes text-mode)
     :config
     (advice-add 'emoji-cheat-sheet-plus--insert-selection :after #'spacemacs/emoji-insert-and-possibly-complete)))

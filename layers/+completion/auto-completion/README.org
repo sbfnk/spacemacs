@@ -132,8 +132,9 @@ To enable manual non-automatic invocation of docstring tooltips, set it to
                       auto-completion-enable-help-tooltip 'manual)))
 #+END_SRC
 
-However the tooltip may overlap on text on macOS, you can use =company-box= on
-Emacs 26+ by setting =auto-completion-use-company-box= to =t=.
+However the tooltip may overlap on text on macOS, you can use =company-box= or
+=company-posframe= on by setting =auto-completion-use-company-box= or
+=auto-completion-use-company-posframe= to =t=, respectively.
 
 ** Sort results by usage
 To enable sorting auto-completion results by their usage frequency set
@@ -160,7 +161,7 @@ It can be done by adding =(global-company-mode)= in the
 to do so, you should instead open an issue to ask for auto-completion support
 for the major-modes where it is missing.
 
-If you choose to use =(global-company-mode)= then you loose some advantages
+If you choose to use =(global-company-mode)= then you would lose some advantages
 provided by the layer system like [[https://github.com/syl20bnr/spacemacs/blob/develop/doc/DOCUMENTATION.org#disabling-layer-services-in-other-layers][disabling auto-completion for specific layers]].
 
 ** Replacing company by auto-complete
@@ -224,6 +225,7 @@ For nicer-looking faces, try adding the following to `custom-set-faces` in your 
 | ~C-/~       | show candidates in Helm or Ivy (for fuzzy searching)                                                 |
 | ~C-M-/~     | filter the company dropdown menu                                                                     |
 | ~M-h~       | show current candidate's documentation in a tooltip (requires =auto-completion-enable-help-tooltip=) |
+| ~C-b~       | switch to next completion backend (=company-other-backend=)                                          |
 
 Vim Style:
 
@@ -263,4 +265,5 @@ Emacs style:
 |-------------+---------------------------------------------------------------------------|
 | ~SPC i S c~ | create a snippet from an active region                                    |
 | ~SPC i S e~ | Expand the snippet just created with ~SPC i y~                            |
+| ~SPC i S h~ | Expand a snippet from history which was previously created with ~SPC i y~ |
 | ~SPC i S w~ | Write the snippet inside =private/snippets= directory for future sessions |

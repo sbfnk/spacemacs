@@ -1,6 +1,6 @@
 ;;; core-configuration-layer-utest.el --- Spacemacs Unit Test File
 ;;
-;; Copyright (c) 2012-2021 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2024 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
@@ -899,18 +899,6 @@
     (should (equal '(("melpa" . "https://melpa.org/packages/"))
                    (configuration-layer//resolve-package-archives input)))))
 
-(ert-deftest test-resolve-package-archives--simple-http ()
-  (let ((input '(("melpa" . "melpa.org/packages/")))
-        dotspacemacs-elpa-https)
-    (should (equal '(("melpa" . "http://melpa.org/packages/"))
-                   (configuration-layer//resolve-package-archives input)))))
-
-(ert-deftest test-resolve-package-archives--org-supports-https ()
-  (let ((input '(("org"   . "orgmode.org/elpa/")))
-        (dotspacemacs-elpa-https t))
-    (should (equal '(("org" . "https://orgmode.org/elpa/"))
-                   (configuration-layer//resolve-package-archives input)))))
-
 (ert-deftest test-resolve-package-archives--idempotent-when-already-http-prefix ()
   (let ((input '(("melpa"   . "http://melpa.org/packages/")))
         (dotspacemacs-elpa-https t))
@@ -1044,7 +1032,9 @@
         (layer-packages '(pkg1 pkg2 pkg3))
         (mocker-mock-default-record-cls 'mocker-stub-record))
     (mocker-let
-     ((file-exists-p (f) ((:output t :occur 2)))
+     ((locate-file
+       (filename path &optional suffixes predicate)
+       ((:record-cls 'mocker-stub-record :output "packages.el" :occur 1)))
       (load (f &optional noerr nomsg) ((:output nil :occur 1))))
      (should (equal (cfgl-layer "layer"
                                 :name 'layer
@@ -1063,7 +1053,8 @@
         (configuration-layer--load-packages-files t)
         (mocker-mock-default-record-cls 'mocker-stub-record))
     (mocker-let
-     ((file-exists-p (f) ((:output t :occur 2)))
+     ((locate-file (filename path &optional suffixes predicate)
+                   ((:record-cls 'mocker-stub-record :output t)))
       (load (f &optional noerr nomsg) ((:output nil :occur 1))))
      (should (equal (cfgl-layer "layer"
                                 :name 'layer
@@ -1096,7 +1087,8 @@
         (layer-packages '(pkg1 pkg2 pkg3))
         (mocker-mock-default-record-cls 'mocker-stub-record))
     (mocker-let
-     ((file-exists-p (f) ((:output t :occur 2)))
+     ((locate-file (filename path &optional suffixes predicate)
+                   ((:record-cls 'mocker-stub-record :output t :occur 1)))
       (load (f &optional noerr nomsg) ((:output nil :occur 1))))
      (should (equal (cfgl-layer "layer"
                                 :name 'layer
@@ -1139,7 +1131,9 @@
         (layer-packages '(pkg1 pkg2 pkg3))
         (mocker-mock-default-record-cls 'mocker-stub-record))
     (mocker-let
-     ((file-exists-p (f) ((:output t :occur 2)))
+     ((locate-file
+       (filename path &optional suffixes predicate)
+       ((:record-cls 'mocker-stub-record :output t :occur 1)))
       (load (f &optional noerr nomsg) ((:output nil :occur 1))))
      (should (equal (cfgl-layer "layer"
                                 :name 'layer
@@ -2874,9 +2868,8 @@
     (mocker-let
      ((file-directory-p (f)
                         ((:record-cls 'mocker-stub-record :output t :occur 1)))
-      (directory-files
-       (directory &optional full match nosort)
-       ((:record-cls 'mocker-stub-record :output nil :occur 1))))
+      (locate-file (filename path &optional suffixes predicate)
+                   ((:record-cls 'mocker-stub-record :output nil :max-occur 5))))
      (should (null (configuration-layer//directory-type input))))))
 
 (ert-deftest test-directory-type--input-is-directory-and-not-a-layer ()
@@ -2884,11 +2877,8 @@
     (mocker-let
      ((file-directory-p (f)
                         ((:record-cls 'mocker-stub-record :output t :occur 1)))
-      (directory-files
-       (directory &optional full match nosort)
-       ((:record-cls 'mocker-stub-record
-                     :output '("toto.el" "tata.el")
-                     :occur 1))))
+      (locate-file (filename path &optional suffixes predicate)
+                   ((:record-cls 'mocker-stub-record :output nil :max-occur 5))))
      (should (null (configuration-layer//directory-type input))))))
 
 (ert-deftest test-directory-type--layer-with-packages.el ()
@@ -2896,9 +2886,11 @@
     (mocker-let
      ((file-directory-p (f)
                         ((:record-cls 'mocker-stub-record :output t :occur 1)))
-      (directory-files
-       (directory &optional full match nosort)
-       ((:record-cls 'mocker-stub-record :output '("packages.el") :occur 1))))
+      (locate-file
+       (filename path &optional suffixes predicate)
+       ((:record-cls 'mocker-stub-record
+                     :output (expand-file-name "packages.el" input)
+                     :occur 1))))
      (should (eq 'layer (configuration-layer//directory-type input))))))
 
 (ert-deftest test-directory-type--layer-with-config.el ()
@@ -2906,9 +2898,11 @@
     (mocker-let
      ((file-directory-p (f)
                         ((:record-cls 'mocker-stub-record :output t :occur 1)))
-      (directory-files
-       (directory &optional full match nosort)
-       ((:record-cls 'mocker-stub-record :output '("config.el") :occur 1))))
+      (locate-file
+       (filename path &optional suffixes predicate)
+       ((:record-cls 'mocker-stub-record
+                     :output (expand-file-name "config.el" input)
+                     :occur 1))))
      (should (eq 'layer (configuration-layer//directory-type input))))))
 
 (ert-deftest test-directory-type--layer-with-keybindings.el ()
@@ -2916,10 +2910,10 @@
     (mocker-let
      ((file-directory-p (f)
                         ((:record-cls 'mocker-stub-record :output t :occur 1)))
-      (directory-files
-       (directory &optional full match nosort)
+      (locate-file
+       (filename path &optional suffixes predicate)
        ((:record-cls 'mocker-stub-record
-                     :output '("keybindings.el")
+                     :output (expand-file-name "keybindings.el" input)
                      :occur 1))))
      (should (eq 'layer (configuration-layer//directory-type input))))))
 
@@ -2928,9 +2922,11 @@
     (mocker-let
      ((file-directory-p (f)
                         ((:record-cls 'mocker-stub-record :output t :occur 1)))
-      (directory-files
-       (directory &optional full match nosort)
-       ((:record-cls 'mocker-stub-record :output '("funcs.el") :occur 1))))
+      (locate-file
+       (filename path &optional suffixes predicate)
+       ((:record-cls 'mocker-stub-record
+                     :output (expand-file-name "funcs.el" input)
+                     :occur 1))))
      (should (eq 'layer (configuration-layer//directory-type input))))))
 
 ;; ---------------------------------------------------------------------------

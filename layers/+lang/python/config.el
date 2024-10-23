@@ -1,6 +1,6 @@
 ;;; config.el --- Python Layer Configuration File for Spacemacs
 ;;
-;; Copyright (c) 2012-2021 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2024 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
@@ -33,8 +33,7 @@ If `nil' then `anaconda' is the default backend unless `lsp' layer is used.")
 (put 'python-backend 'safe-local-variable #'symbolp)
 
 (defvar python-lsp-server 'pylsp
-  "Language server to use for lsp backend. Possible values are `pylsp', `pyright'
-and `mspyls'")
+  "Language server for lsp backend. Possible values are `pylsp', `pyright'")
 (put 'python-lsp-server 'safe-local-variable #'symbolp)
 
 (defvar python-lsp-git-root nil
@@ -54,7 +53,7 @@ If nil then `yapf' is the default formatter unless `lsp' layer is used.")
   "If non-nil, automatically format code with formatter selected
   via `python-formatter' on save.")
 
-(defvar python-test-runner 'nose
+(defvar python-test-runner 'pytest
   "Test runner to use. Possible values are `nose' or `pytest'.")
 (put 'python-test-runner 'safe-local-variable #'symbolp)
 
@@ -95,6 +94,8 @@ Possible values are `on-visit', `on-project-switch' or `nil'.")
 (defvar spacemacs--python-poetry-modes nil
   "List of major modes where to add poetry support.")
 
+(defvar spacemacs--python-shell-interpreter-origin nil
+  "Origin python-shell-interpreter value.")
 ;; inferior-python-mode needs these variables to be defined.  The python
 ;; package declares them but does not initialize them.
 (defvar python-shell--interpreter nil)

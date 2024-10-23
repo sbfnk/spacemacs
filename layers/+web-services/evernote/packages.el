@@ -1,6 +1,6 @@
 ;;; packages.el --- Evernote Layer packages File for Spacemacs
 ;;
-;; Copyright (c) 2012-2021 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2024 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
@@ -20,10 +20,9 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-(setq evernote-packages
+(defconst evernote-packages
   '(
-    geeknote
-    ))
+    geeknote))
 
 (defun evernote/init-geeknote ()
   "Initializes geeknote and adds keybindings for its exposed functionalities."
@@ -35,12 +34,11 @@
                geeknote-remove
                geeknote-move)
     :init
-    (progn
-      (spacemacs/declare-prefix "awe" "applications-evernote")
-      (spacemacs/set-leader-keys
-        "awec" 'geeknote-create
-        "awee" 'geeknote-edit
-        "awef" 'geeknote-find
-        "awes" 'geeknote-show
-        "awer" 'geeknote-remove
-        "awem" 'geeknote-move))))
+    (spacemacs/declare-prefix "awe" "applications-evernote")
+    (spacemacs/set-leader-keys
+      "awec" 'geeknote-create
+      "awee" 'geeknote-edit
+      "awef" 'geeknote-find
+      "awes" 'geeknote-show
+      "awer" 'geeknote-remove
+      "awem" 'geeknote-move)))

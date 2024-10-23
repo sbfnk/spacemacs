@@ -1,6 +1,6 @@
 ;;; funcs.el --- Spacemacs Layouts Layer functions File -*- lexical-binding: t; -*-
 ;;
-;; Copyright (c) 2012-2021 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2024 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
@@ -19,12 +19,6 @@
 ;;
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
-;;
-;; Parts of this file are used with permission under the terms of other
-;; GPL-compatible licenses. Specifically, the functions
-;; `spacemacs//ediff-in-comparison-buffer-p' and
-;; `spacemacs/ediff-balance-windows' are included under the terms of the MIT
-;; license: <https://github.com/roman/golden-ratio.el/blob/master/LICENSE>
 
 
 
@@ -80,18 +74,6 @@ Cancels autosave on exiting perspectives mode."
   "Return non-nil if current layout doesn't contain BUFFER."
   (not (persp-contain-buffer-p buffer)))
 
-(defun spacemacs//ediff-in-comparison-buffer-p (&optional buffer)
-  "Return non-nil if BUFFER is part of an ediff comparison."
-  (with-current-buffer (or buffer (current-buffer))
-    (and (boundp 'ediff-this-buffer-ediff-sessions)
-         ediff-this-buffer-ediff-sessions)))
-
-(defun spacemacs/ediff-balance-windows ()
-  "Balance the width of ediff windows."
-  (interactive)
-  (ediff-toggle-split)
-  (ediff-toggle-split))
-
 (defun spacemacs/jump-to-last-layout ()
   "Open the previously selected layout, if it exists."
   (interactive)
@@ -101,7 +83,7 @@ Cancels autosave on exiting perspectives mode."
     (persp-switch spacemacs--last-selected-layout)))
 
 (defun spacemacs-layouts/non-restricted-buffer-list-helm ()
-  "Show all buffers accross all layouts."
+  "Show all buffers across all layouts."
   (interactive)
   (let ((helm-buffer-list-reorder-fn #'helm-buffers-reorder-buffer-list))
     (helm-mini)))
@@ -111,9 +93,21 @@ Cancels autosave on exiting perspectives mode."
   (let ((ivy-ignore-buffers (remove #'spacemacs//layout-not-contains-buffer-p ivy-ignore-buffers)))
     (ivy-switch-buffer)))
 
+(defmacro spacemacs||with-persp-buffer-list (&rest body)
+  "This one is a brute force version of `with-persp-buffer-list'.
+It maitains the order of the original `buffer-list'"
+  `(cl-letf* ((org-buffer-list
+               (symbol-function 'buffer-list))
+              ((symbol-function 'buffer-list)
+               #'(lambda (&optional frame)
+                   (seq-filter
+                    #'persp-contain-buffer-p
+                    (funcall org-buffer-list frame)))))
+     ,@body))
+
 (defun spacemacs-layouts//advice-with-persp-buffer-list (orig-fun &rest args)
-  "Advice to provide perp buffer list."
-  (with-persp-buffer-list () (apply orig-fun args)))
+  "Advice to provide persp buffer list."
+  (spacemacs||with-persp-buffer-list () (apply orig-fun args)))
 
 
 ;; Persp transient-state
@@ -558,7 +552,7 @@ Run PROJECT-ACTION on project."
      :mode-line helm-read-file-name-mode-line-string
      :keymap (let ((map (make-sparse-keymap)))
                (define-key map
-                 (kbd "C-d") #'(lambda () (interactive)
+                 (kbd "C-d") (lambda () (interactive)
                                  (helm-exit-and-execute-action
                                   (lambda (project)
                                     (spacemacs||switch-project-persp project
@@ -940,11 +934,10 @@ FRAME defaults to the current frame."
                                   frame))
 
 (defun spacemacs//fixup-window-configs (orig-fn newname &optional unique)
-  "Update the buffer's name in the eyebrowse window-configs of any perspectives
-containing the buffer."
+  "Update the buffer's name in the eyebrowse window-configs of all perspectives."
   (let* ((old (buffer-name))
          (new (funcall orig-fn newname unique)))
-    (dolist (persp (persp--buffer-in-persps (current-buffer)))
+    (dolist (persp (persp-persps))
       (dolist (window-config
                (append (persp-parameter 'gui-eyebrowse-window-configs persp)
                        (persp-parameter 'term-eyebrowse-window-configs persp)))
@@ -957,14 +950,24 @@ containing the buffer."
 (defun spacemacs/compleseus-pers-switch-project (arg)
   "Select a project layout using consult."
   (interactive "P")
-  (let ((project (completing-read
-                  "Switch to Project Perspective: "
-                  (if (projectile-project-p)
-                      (cons (abbreviate-file-name (projectile-project-root))
-                            (projectile-relevant-known-projects))
-                    projectile-known-projects))))
+  (let* ((current-project-maybe (if (projectile-project-p)
+                                    (abbreviate-file-name (projectile-project-root))
+                                  nil))
+         (project (completing-read
+                   "Switch to Project Perspective: "
+                   (if current-project-maybe
+                       (cons current-project-maybe projectile-known-projects)
+                     projectile-known-projects)
+                   nil
+                   nil
+                   nil
+                   nil
+                   current-project-maybe)))
     (spacemacs||switch-project-persp project
-      (projectile-switch-project-by-name project arg))))
+      (let ((projectile-switch-project-action (if (string= project current-project-maybe)
+                                                  (lambda () nil)
+                                                projectile-switch-project-action)))
+        (projectile-switch-project-by-name project arg)))))
 
 
 ;; layout local variables

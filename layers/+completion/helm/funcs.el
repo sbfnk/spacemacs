@@ -1,6 +1,6 @@
 ;;; funcs.el --- Helm Layer functions File for Spacemacs
 ;;
-;; Copyright (c) 2012-2021 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2024 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
@@ -93,7 +93,7 @@
    `(cond
      ,@(mapcar
         (lambda (x)
-          `((executable-find ,x)
+          `((executable-find ,x t)
             ',(let ((func
                      (intern
                       (format (if default-inputp
@@ -525,7 +525,7 @@ Removes the automatic guessing of the initial value based on thing at point. "
   (interactive "P")
   ;; fixes #10882 and #11270
   (require 'helm-files)
-  (let* ((hist (and arg helm-ff-history (helm-find-files-history)))
+  (let* ((hist (and arg helm-ff-history (helm-find-files-history nil)))
          (default-input hist)
          (input (cond ((and (eq major-mode 'dired-mode) default-input)
                        (file-name-directory default-input))
@@ -547,7 +547,7 @@ Ensure that helm is required before calling FUNC."
                   (symbol-name func))
          (interactive)
          (require 'helm)
-         (call-interactively ',func))
+         (command-execute ',func))
        (spacemacs/set-leader-keys ,keys ',func-name))))
 
  ;; Find files tweaks
@@ -656,5 +656,5 @@ to buffers)."
   "Helm M-x with fuzzy matching enabled"
   (interactive)
   (let ((completion-styles completion-styles))
-    (add-to-list 'completion-styles `,(if (version< emacs-version "27") 'helm-flex 'flex) t)
+    (add-to-list 'completion-styles 'flex t)
     (call-interactively 'helm-M-x)))

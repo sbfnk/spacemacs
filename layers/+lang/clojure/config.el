@@ -1,6 +1,6 @@
 ;;; config.el --- Clojure Layer configuration File for Spacemacs
 ;;
-;; Copyright (c) 2012-2021 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2024 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
@@ -37,6 +37,10 @@
 
 (defvar clojure-enable-clj-refactor nil
   "If non-nil, the clj-refactor is enabled.")
+
+(defvar clojure-enable-kaocha-runner nil
+  "If non-nil, the Kaocha runner is enabled.
+Kaocha should be a dev-dependency or alias in a Clojure project.")
 
 (defvar clojure-enable-linters nil
   "If non-nil, enable clojure linters.")

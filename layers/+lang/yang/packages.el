@@ -1,6 +1,6 @@
 ;;; packages.el --- YANG Layer packages file for Spacemacs
 ;;
-;; Copyright (c) 2012-2021 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2024 Sylvain Benner & Contributors
 ;;
 ;; Author: Christian Hopps <chopps@gmail.com>
 ;; Originally started with checker definition from flycheck-yang project.
@@ -30,8 +30,7 @@
   (spacemacs|add-company-backends :modes yang-mode))
 
 (defun yang/post-init-flycheck ()
-  (progn
-    (flycheck-define-command-checker 'yang-pyang
+  (flycheck-define-command-checker 'yang-pyang
       "A YANG syntax checker using the pyang parser."
       :command '("pyang"
                  (eval (concat "--" yang-pyang-rules))
@@ -42,10 +41,10 @@
                         (warning line-start (file-name) ":"
                                  line ": " "warning: " (message) line-end))
       :modes 'yang-mode
-      :error-filter '(lambda (errors)
+      :error-filter (lambda (errors)
                        (-> errors
                            flycheck-dedent-error-messages
-                           flycheck-sanitize-errors)))
+                           flycheck-sanitize-errors))
     (add-to-list 'flycheck-checkers 'yang-pyang)
     (spacemacs/enable-flycheck 'yang-mode)))
 

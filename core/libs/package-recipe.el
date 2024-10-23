@@ -1,26 +1,26 @@
-;;; package-recipe.el --- Package recipes as EIEIO objects  -*- lexical-binding: t -*-
+;;; package-recipe.el --- Package recipes as EIEIO objects  -*- lexical-binding:t; coding:utf-8 -*-
 
-;; Copyright (C) 2018-2021  Jonas Bernoulli
+;; Copyright (C) 2018-2024 Jonas Bernoulli
 
-;; Author: Jonas Bernoulli <jonas@bernoul.li>
+;; Author: Jonas Bernoulli <emacs.package-build@jonas.bernoulli.dev>
+;; Maintainer: Jonas Bernoulli <emacs.package-build@jonas.bernoulli.dev>
+;; Homepage: https://github.com/melpa/package-build
+;; Keywords: maint tools
 
-;; This file is not (yet) part of GNU Emacs.
-;; However, it is distributed under the same license.
+;; SPDX-License-Identifier: GPL-3.0-or-later
 
-;; GNU Emacs is free software; you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation; either version 3, or (at your option)
-;; any later version.
-
-;; GNU Emacs is distributed in the hope that it will be useful,
+;; This file is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published
+;; by the Free Software Foundation, either version 3 of the License,
+;; or (at your option) any later version.
+;;
+;; This file is distributed in the hope that it will be useful,
 ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;; GNU General Public License for more details.
-
+;;
 ;; You should have received a copy of the GNU General Public License
-;; along with GNU Emacs; see the file COPYING.  If not, write to the
-;; Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-;; Boston, MA 02110-1301, USA.
+;; along with this file.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 
@@ -28,9 +28,12 @@
 
 ;;; Code:
 
+(require 'compat nil t)
 (require 'eieio)
+(require 'subr-x)
 (require 'url-parse)
 
+(defvar package-build-use-git-remote-hg)
 (defvar package-build-recipes-dir)
 (defvar package-build-working-dir)
 
@@ -39,8 +42,6 @@
 (defclass package-recipe ()
   ((url-format      :allocation :class       :initform nil)
    (repopage-format :allocation :class       :initform nil)
-   (time-regexp     :allocation :class       :initform nil)
-   (stable-p        :allocation :class       :initform nil)
    (name            :initarg :name           :initform nil)
    (url             :initarg :url            :initform nil)
    (repo            :initarg :repo           :initform nil)
@@ -49,20 +50,56 @@
    (branch          :initarg :branch         :initform nil)
    (commit          :initarg :commit         :initform nil)
    (version-regexp  :initarg :version-regexp :initform nil)
-   (old-names       :initarg :old-names      :initform nil))
+   (shell-command   :initarg :shell-command  :initform nil)
+   (make-targets    :initarg :make-targets   :initform nil)
+   (org-exports     :initarg :org-exports    :initform nil)
+   (old-names       :initarg :old-names      :initform nil)
+   (version                                  :initform nil)
+   (revdesc                                  :initform nil)
+   (time                                     :initform nil)
+   (summary                                  :initform nil)
+   (dependencies                             :initform nil)
+   (webpage                                  :initform nil)
+   (keywords                                 :initform nil)
+   (authors                                  :initform nil)
+   (maintainers                              :initform nil)
+   (tarballp                                 :initform t))
   :abstract t)
+
+;;;; Git
+
+(defclass package-git-recipe (package-recipe) ())
+
+(defclass package-github-recipe (package-git-recipe)
+  ((url-format      :initform "https://github.com/%s")
+   (repopage-format :initform "https://github.com/%s")))
+
+(defclass package-gitlab-recipe (package-git-recipe)
+  ((url-format      :initform "https://gitlab.com/%s")
+   (repopage-format :initform "https://gitlab.com/%s")))
+
+(defclass package-codeberg-recipe (package-git-recipe)
+  ((url-format      :initform "https://codeberg.org/%s")
+   (repopage-format :initform "https://codeberg.org/%s")))
+
+(defclass package-sourcehut-recipe (package-git-recipe)
+  ((url-format      :initform "https://git.sr.ht/~%s")
+   (repopage-format :initform "https://git.sr.ht/~%s")))
+
+;;;; Mercurial
+
+(defclass package-hg-recipe (package-recipe) ())
+
+(defclass package-git-remote-hg-recipe (package-git-recipe) ())
+
+;;; Methods
 
 (cl-defmethod package-recipe--working-tree ((rcp package-recipe))
   (file-name-as-directory
    (expand-file-name (oref rcp name) package-build-working-dir)))
 
-(cl-defmethod package-recipe--upstream-url ((rcp package-recipe))
-  (or (oref rcp url)
-      (format (oref rcp url-format)
-              (oref rcp repo))))
-
 (cl-defmethod package-recipe--upstream-protocol ((rcp package-recipe))
-  (let ((url (package-recipe--upstream-url rcp)))
+  (let ((url (oref rcp url)))
     (cond ((string-match "\\`\\([a-z]+\\)://" url)
            (match-string 1 url))
           ((string-match "\\`[^:/ ]+:" url) "ssh")
@@ -71,27 +108,13 @@
 (cl-defmethod package-recipe--fetcher ((rcp package-recipe))
   (substring (symbol-name (eieio-object-class rcp)) 8 -7))
 
-;;;; Git
+;;; Constants
 
-(defclass package-git-recipe (package-recipe)
-  ((time-regexp     :initform "\
-\\([0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} \
-[0-9]\\{2\\}:[0-9]\\{2\\}:[0-9]\\{2\\}\\( [+-][0-9]\\{4\\}\\)?\\)")))
+(defconst package-recipe--forge-fetchers
+  '(github gitlab codeberg sourcehut))
 
-(defclass package-github-recipe (package-git-recipe)
-  ((url-format      :initform "https://github.com/%s.git")
-   (repopage-format :initform "https://github.com/%s")))
-
-(defclass package-gitlab-recipe (package-git-recipe)
-  ((url-format      :initform "https://gitlab.com/%s.git")
-   (repopage-format :initform "https://gitlab.com/%s")))
-
-;;;; Mercurial
-
-(defclass package-hg-recipe (package-recipe)
-  ((time-regexp     :initform "\
-\\([0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} \
-[0-9]\\{2\\}:[0-9]\\{2\\}\\( [+-][0-9]\\{4\\}\\)?\\)")))
+(defconst package-recipe--fetchers
+  (append '(git hg) package-recipe--forge-fetchers))
 
 ;;; Interface
 
@@ -114,18 +137,39 @@ file is invalid, then raise an error."
                          (read (current-buffer))))
                (plist (cdr recipe))
                (fetcher (plist-get plist :fetcher))
-               key val args)
+               key val args rcp)
           (package-recipe--validate recipe name)
-          (while (and (setq key (pop plist))
-                      (setq val (pop plist)))
+          (while (setq key (pop plist))
+            (setq val (pop plist))
             (unless (eq key :fetcher)
               (push val args)
               (push key args)))
-          (apply (intern (format "package-%s-recipe" fetcher))
-                 name :name name args))
+          (when (and package-build-use-git-remote-hg (eq fetcher 'hg))
+            (setq fetcher 'git-remote-hg)
+            (setq args (plist-put args :url (concat "hg::" (oref rcp url)))))
+          (setq rcp (apply (intern (format "package-%s-recipe" fetcher))
+                           name :name name args))
+          (unless (oref rcp url)
+            (oset rcp url (format (oref rcp url-format) (oref rcp repo))))
+          rcp)
       (error "No such recipe: %s" name))))
 
 ;;; Validation
+
+;;;###autoload
+(defun package-recipe-validate-all ()
+  "Validate all package recipes.
+Return a boolean indicating whether all recipes are valid and show
+a message for each invalid recipe."
+  (interactive)
+  (let ((all-valid t))
+    (dolist-with-progress-reporter (name (package-recipe-recipes))
+        "Validating recipes..."
+      (condition-case err
+          (package-recipe-lookup name)
+        (error (message "Invalid recipe for %s: %S" name (cdr err))
+               (setq all-valid nil))))
+    all-valid))
 
 (defun package-recipe--validate (recipe name)
   "Perform some basic checks on the raw RECIPE for the package named NAME."
@@ -137,41 +181,54 @@ file is invalid, then raise an error."
                name ident)
     (cl-assert plist)
     (let* ((symbol-keys '(:fetcher))
-           (string-keys '(:url :repo :commit :branch :version-regexp))
-           (list-keys '(:files :old-names))
+           (string-keys '( :url :repo :commit :branch
+                           :version-regexp :shell-command))
+           (list-keys '(:files :make-targets :org-exports :old-names))
            (all-keys (append symbol-keys string-keys list-keys)))
       (dolist (thing plist)
         (when (keywordp thing)
           (cl-assert (memq thing all-keys) nil "Unknown keyword %S" thing)))
       (let ((fetcher (plist-get plist :fetcher)))
         (cl-assert fetcher nil ":fetcher is missing")
-        (if (memq fetcher '(github gitlab))
+        (if (memq fetcher package-recipe--forge-fetchers)
             (progn
               (cl-assert (plist-get plist :repo) ":repo is missing")
               (cl-assert (not (plist-get plist :url)) ":url is redundant"))
           (cl-assert (plist-get plist :url) ":url is missing")))
       (dolist (key symbol-keys)
-        (let ((val (plist-get plist key)))
-          (when val
-            (cl-assert (symbolp val) nil "%s must be a symbol but is %S" key val))))
+        (when-let ((val (plist-get plist key)))
+          (cl-assert (symbolp val) nil "%s must be a symbol but is %S" key val)))
       (dolist (key list-keys)
-        (let ((val (plist-get plist key)))
-          (when val
-            (cl-assert (listp val) nil "%s must be a list but is %S" key val))))
+        (when-let ((val (plist-get plist key)))
+          (cl-assert (listp val) nil "%s must be a list but is %S" key val)))
       (dolist (key string-keys)
-        (let ((val (plist-get plist key)))
-          (when val
-            (cl-assert (stringp val) nil "%s must be a string but is %S" key val))))
+        (when-let ((val (plist-get plist key)))
+          (cl-assert (stringp val) nil "%s must be a string but is %S" key val)))
+      (when-let ((spec (plist-get plist :files)))
+        ;; `:defaults' is only allowed as the first element.
+        ;; If we find it in that position, skip over it.
+        (when (eq (car spec) :defaults)
+          (setq spec (cdr spec)))
+        ;; All other elements have to be strings or lists of strings.
+        ;; Lists whose first element is `:exclude', `:inputs' or
+        ;; `:rename' are also valid.
+        (dolist (entry spec)
+          (unless (cond ((stringp entry)
+                         (not (equal entry "*")))
+                        ((listp entry)
+                         (and-let* ((globs (cdr entry)))
+                           (and (or (memq (car entry)
+                                          '(:exclude :inputs :rename))
+                                    (stringp (car entry)))
+                                (seq-every-p (lambda (glob)
+                                               (and (stringp glob)
+                                                    (not (equal glob "*"))))
+                                             globs)))))
+            (error "Invalid files spec entry %S" entry))))
       ;; Silence byte compiler of Emacs 28.  It appears that uses
       ;; inside cl-assert sometimes, but not always, do not count.
       (list name ident all-keys))
     recipe))
 
-;;; _
 (provide 'package-recipe)
-;; Local Variables:
-;; coding: utf-8
-;; checkdoc-minor-mode: 1
-;; indent-tabs-mode: nil
-;; End:
 ;;; package-recipe.el ends here

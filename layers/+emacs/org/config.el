@@ -1,6 +1,6 @@
 ;;; config.el --- Org configuration File for Spacemacs
 ;;
-;; Copyright (c) 2012-2021 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2024 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
@@ -40,7 +40,7 @@
 (defvar org-enable-reveal-js-support nil
   "If non-nil, enable export to reveal.js.")
 
-(defvar org-projectile-file "TODOs.org"
+(defvar org-project-capture-projects-file "TODOs.org"
   "The file to store project TODOs in. If this is a relative
 path, one file per project is used (and the path is relative to
 the project root). If it an absolute path, one global file is
@@ -74,11 +74,11 @@ used.")
   "If non-nil, Jira (https://www.atlassian.com/software/jira) related packages
 are configured.")
 
+(defvar org-enable-modern-support nil
+  "If non-nil, org-modern (https://github.com/minad/org-modern) is configured.")
+
 (defvar org-enable-verb-support nil
   "If non-nil, Verb (https://github.com/federicotdn/verb) is configured.")
-
-(defvar org-enable-roam-support (bound-and-true-p org-enable-roam-server)
-  "If non-nil, org-roam (https://www.orgroam.com/) is configured")
 
 (defvar org-persp-startup-org-file nil
   "If non-nil, opens the specified file instead of the first in org-agenda-files")
@@ -93,8 +93,11 @@ ATTENTION: `valign-mode' will be laggy working with tables contain more than 100
 (defvar org-enable-appear-support nil
   "If non-nil, enable org-appear in org-mode buffers.")
 
-(defvar org-enable-roam-server nil
-  "If non-nil, enable org-roam-server support.")
+(defvar org-enable-roam-support (bound-and-true-p org-enable-roam-ui)
+  "If non-nil, org-roam (https://www.orgroam.com/) is configured")
+
+(defvar org-enable-roam-ui nil
+  "If non-nil, enable org-roam-ui support.")
 
 (defvar org-enable-roam-protocol nil
   "If non-nil, enable org-roam-protocol.
@@ -122,3 +125,6 @@ intelligence to attempt to determine the destination state.")
 
 (defvar org-enable-org-brain-support nil
   "If non-nil, enable org-brain")
+
+(defvar org-enable-transclusion-support nil
+  "If non-nil the `org-transclusion' package is configured.")

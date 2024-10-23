@@ -1,6 +1,6 @@
 ;;; packages.el --- Semantic Web layer packages file for Spacemacs.
 ;;
-;; Copyright (c) 2012-2021 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2024 Sylvain Benner & Contributors
 ;;
 ;; Author: Andreas Textor <mail@atextor.de>
 ;; URL: https://github.com/syl20bnr/spacemacs
@@ -22,8 +22,9 @@
 
 
 (defconst semantic-web-packages
-  '(
-    ttl-mode
+  '((ttl-mode :location (recipe
+                         :fetcher github
+                         :repo "jeeger/ttl-mode"))
     sparql-mode
     org))
 
@@ -35,12 +36,11 @@
   (use-package sparql-mode
     :mode ("\\.\\(sparql\\|rq\\)\\'" . sparql-mode)
     :init
-    (progn
-      (spacemacs/set-leader-keys-for-major-mode 'sparql-mode "q" 'sparql-query-region)
-      (when (configuration-layer/package-used-p 'company)
-        (spacemacs|add-company-backends
-          :backends company-sparql
-          :modes sparql-mode)))))
+    (spacemacs/set-leader-keys-for-major-mode 'sparql-mode "q" 'sparql-query-region)
+    (when (configuration-layer/package-used-p 'company)
+      (spacemacs|add-company-backends
+       :backends company-sparql
+       :modes sparql-mode))))
 
 (defun semantic-web/pre-init-org ()
   (spacemacs|use-package-add-hook org

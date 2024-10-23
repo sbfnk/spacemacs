@@ -1,6 +1,6 @@
 ;;; packages.el --- spacemacs-org layer packages file for Spacemacs.
 ;;
-;; Copyright (c) 2012-2021 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2024 Sylvain Benner & Contributors
 ;;
 ;; Author: Boris Buliga <d12frosted@d12frosted.local>
 ;; URL: https://github.com/syl20bnr/spacemacs
@@ -34,7 +34,7 @@
     ;; `org' package.
     (default-org-config :location built-in)
     org-superstar
-    (space-doc :location local)
+    (space-doc :location (recipe :fetcher local))
     toc-org
     ))
 
@@ -46,29 +46,19 @@
     :commands (org-clock-out org-occur-in-agenda-files org-agenda-files)
     :defer t
     :init
-    (progn
-      ;; FIXME: This check has been disabled pending a resolution of
-      ;; https://github.com/syl20bnr/spacemacs/issues/3933
-      ;; (when (featurep 'org)
-      ;;   (configuration-layer//set-error)
-      ;;   (spacemacs-buffer/append
-      ;;    (concat
-      ;;     "Org features were loaded before the `org' layer initialized.\n"
-      ;;     "Try removing org code from user initialization and private layers.") t))
-      (setq org-startup-with-inline-images t
-            org-src-fontify-natively t
-            ;; this is consistent with the value of
-            ;; `helm-org-headings-max-depth'.
-            org-imenu-depth 8)
-      :config
-      (progn
-        (font-lock-add-keywords
-         'org-mode '(("\\(@@html:<kbd>@@\\) \\(.*\\) \\(@@html:</kbd>@@\\)"
-                      (1 font-lock-comment-face prepend)
-                      (2 font-lock-function-name-face)
-                      (3 font-lock-comment-face prepend))))
-        ;; Open links and files with RET in normal state
-        (evil-define-key 'normal org-mode-map (kbd "RET") 'org-open-at-point)))))
+    (setq org-startup-with-inline-images t
+          org-src-fontify-natively t
+          ;; this is consistent with the value of
+          ;; `helm-org-headings-max-depth'.
+          org-imenu-depth 8)
+    :config
+    (font-lock-add-keywords
+     'org-mode '(("\\(@@html:<kbd>@@\\) \\(.*\\) \\(@@html:</kbd>@@\\)"
+                  (1 font-lock-comment-face prepend)
+                  (2 font-lock-function-name-face)
+                  (3 font-lock-comment-face prepend))))
+    ;; Open links and files with RET in normal state
+    (evil-define-key 'normal org-mode-map (kbd "RET") 'org-open-at-point)))
 
 (defun spacemacs-org/init-org-superstar ()
   (use-package org-superstar
@@ -79,9 +69,8 @@
   (use-package toc-org
     :defer t
     :init
-    (progn
-      (setq toc-org-max-depth 10)
-      (add-hook 'org-mode-hook 'toc-org-enable))))
+    (setq toc-org-max-depth 10)
+    (add-hook 'org-mode-hook 'toc-org-enable)))
 
 (defun spacemacs-org/init-space-doc ()
   (add-hook 'org-mode-hook 'dotspacemacs//prettify-spacemacs-docs))

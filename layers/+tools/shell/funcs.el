@@ -1,6 +1,6 @@
 ;;; funcs.el --- Shell Layer functions File
 ;;
-;; Copyright (c) 2012-2021 Sylvain Benner & Contributors
+;; Copyright (c) 2012-2024 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
@@ -39,7 +39,9 @@ view; to pop-up a full width buffer, use
 `spacemacs/projectile-shell-pop'."
   (interactive)
   (call-interactively
-   (or (and (eq shell-default-shell 'multi-term) #'projectile-multi-term-in-root)
+   (or (pcase shell-default-shell
+         ('multi-term #'projectile-multi-term-in-root)
+         ('eat #'eat-project))
        (intern-soft (format "projectile-run-%s" shell-default-shell))
        #'projectile-run-shell)))
 
@@ -75,8 +77,9 @@ Additionally changes to working directory when the value of
 `shell-pop-autocd-to-working-dir' is non-nil (default)."
   (interactive)
   (let ((shell (cl-case shell-default-shell
-                 ('multi-term 'multiterm)
-                 ('shell 'inferior-shell)
+                 (multi-vterm 'multivterm)
+                 (multi-term 'multiterm)
+                 (shell 'inferior-shell)
                  (t shell-default-shell))))
     (call-interactively (intern (format "spacemacs/shell-pop-%S" shell)))))
 
@@ -165,7 +168,6 @@ is achieved by adding the relevant text properties."
 (defun spacemacs//init-eshell ()
   "Stuff to do when enabling eshell."
   (setq pcomplete-cycle-completions nil)
-  (if (bound-and-true-p linum-mode) (linum-mode -1))
   ;; autojump to prompt line if not on one already
   (add-hook 'evil-insert-state-entry-hook
             'spacemacs//eshell-auto-end nil t)
@@ -211,7 +213,7 @@ is achieved by adding the relevant text properties."
   (spacemacs/set-leader-keys-for-major-mode 'eshell-mode
     "H" 'spacemacs/helm-eshell-history)
   (define-key eshell-mode-map
-    (kbd "M-l") 'spacemacs/helm-eshell-history))
+              (kbd "M-l") 'spacemacs/helm-eshell-history))
 
 (defun spacemacs/ivy-eshell-history ()
   (interactive)
@@ -241,13 +243,18 @@ is achieved by adding the relevant text properties."
   (interactive)
   (multi-term))
 
+(defun multivterm (&optional ARG)
+  "Wrapper to be able to call multi-vterm from shell-pop"
+  (interactive)
+  (multi-vterm))
+
 (defun inferior-shell (&optional ARG)
   "Wrapper to open shell in current window"
   (interactive)
   (switch-to-buffer "*shell*")
   (shell "*shell*"))
 
-;; https://stackoverflow.com/questions/6837511/automatically-disable-a-global-minor-mode-for-a-specific-major-mode
+;; https://stackoverflow.com/a/6839968
 (defun spacemacs//inhibit-global-centered-cursor-mode ()
   "Counter-act `global-centered-cursor-mode'."
   (add-hook 'after-change-major-mode-hook
@@ -274,17 +281,17 @@ tries to restore a dead buffer or window."
 (defun spacemacs/helm-vterm-search-history ()
   "Narrow down bash history with helm."
   (interactive)
-  (assert (string-equal mode-name "VTerm") nil "Not in VTerm mode")
+  (cl-assert (string-equal mode-name "VTerm") nil "Not in VTerm mode")
   (helm :sources (helm-build-sync-source "Bash history"
-                                         :candidates (spacemacs//vterm-make-history-candidates)
-                                         :action #'vterm-send-string)
+                   :candidates (spacemacs//vterm-make-history-candidates)
+                   :action #'vterm-send-string)
         :buffer "*helm-bash-history*"
         :candidate-number-limit 10000))
 
 (defun spacemacs/counsel-vterm-search-history ()
   "Narrow down bash history with ivy."
   (interactive)
-  (assert (string-equal mode-name "VTerm") nil "Not in VTerm mode")
+  (cl-assert (string-equal mode-name "VTerm") nil "Not in VTerm mode")
   (ivy-read "Bash history: "
             (spacemacs//vterm-make-history-candidates)
             :keymap counsel-describe-map
@@ -300,3 +307,11 @@ tries to restore a dead buffer or window."
     (define-key mode-map (kbd "M-r") 'spacemacs/helm-vterm-search-history))
    ((configuration-layer/layer-used-p 'ivy)
     (define-key mode-map (kbd "M-r") 'spacemacs/counsel-vterm-search-history))))
+
+(defun spacemacs/shell-pop-with-eshell-history-write (orig-fun &rest args)
+  "Make sure that the eshell history is written before the window is closed."
+  (unless (one-window-p)
+    (when (string= shell-pop-internal-mode "eshell")
+      (eshell-write-history)
+      (eshell-write-last-dir-ring)
+      (apply orig-fun args))))

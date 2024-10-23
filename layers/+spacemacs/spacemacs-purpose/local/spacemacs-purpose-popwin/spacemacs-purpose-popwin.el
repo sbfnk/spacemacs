@@ -37,20 +37,20 @@ POSITION should be one of bottom, top, left and right.
 SIZE should be either a positive number of nil.  Size is interpreted as
 width or height depending on POSITION."
   (let* ((size (cl-case position
-                 ('left (purpose--normalize-width (or size
+                 (left (purpose--normalize-width (or size
+                                                     popwin:popup-window-width)))
+                 (right (purpose--normalize-width (or size
                                                       popwin:popup-window-width)))
-                 ('right (purpose--normalize-width (or size
-                                                       popwin:popup-window-width)))
-                 ('top (purpose--normalize-height (or size
-                                                      popwin:popup-window-height)))
-                 ('bottom (purpose--normalize-height (or size
-                                                         popwin:popup-window-height)))))
+                 (top (purpose--normalize-height (or size
+                                                     popwin:popup-window-height)))
+                 (bottom (purpose--normalize-height (or size
+                                                        popwin:popup-window-height)))))
          (size (when size (- size)))
          (side (cl-case position
-                 ('left 'left)
-                 ('right 'right)
-                 ('top 'above)
-                 ('bottom 'below))))
+                 (left 'left)
+                 (right 'right)
+                 (top 'above)
+                 (bottom 'below))))
     (lambda (buffer alist)
       (let* ((main-window (if pupo-split-active-window
                               (selected-window)
@@ -77,10 +77,10 @@ bottom -> popb
 POSITION defaults to bottom."
   (cl-case (or position 'bottom)
     ;; names are short so they don't take much room in the mode-line
-    ('left 'popl)
-    ('right 'popr)
-    ('top 'popt)
-    ('bottom 'popb)))
+    (left 'popl)
+    (right 'popr)
+    (top 'popt)
+    (bottom 'popb)))
 
 (defun pupo//actions (settings)
   "Generate list of display functions for displaying a popup window.
@@ -194,6 +194,30 @@ Popwin's settings are taken from `popwin:special-display-config'."
 Popwin's settings are taken from `popwin:special-display-config'."
   (purpose-set-extension-configuration :pupo (pupo/popwin-config-to-purpose-config)))
 
+(defun pupo/before-popwin-create (&rest args)
+  "Save current popup windows for later restoration.
+The windows are restored in `pupo/after-popwin-create'.
+Note that the windows themselves aren't saved, but some internal
+variables are updated instead."
+  (setq pupo--saved-buffers (mapcar #'window-buffer pupo--windows))
+  (setq pupo--saved-auto-buffers (mapcar #'window-buffer pupo--auto-windows)))
+
+(defun pupo/after-popwin-create (&rest args)
+  "Restore popup windows.
+The windows were saved in `pupo/before-popwin-create'.
+Note that the windows themselves aren't restored, but some internal
+variables are updated instead."
+  (setq pupo--windows nil)
+  (cl-loop for buffer in pupo--saved-buffers
+           do (setq pupo--windows
+                    (append pupo--windows
+                            (get-buffer-window-list buffer))))
+  (setq pupo--auto-windows nil)
+  (cl-loop for buffer in pupo--saved-auto-buffers
+           do (setq pupo--auto-windows
+                    (append pupo--auto-windows
+                            (get-buffer-window-list buffer)))) )
+
 (define-minor-mode pupo-mode
   "Minor mode for combining `purpose-mode' and `popwin-mode'."
   :global t
@@ -211,40 +235,13 @@ Popwin's settings are taken from `popwin:special-display-config'."
     (remove-hook 'purpose-display-buffer-functions #'pupo/after-display)
     (remove-hook 'purpose-display-buffer-functions #'pupo/auto-delete-windows)))
 
-(defadvice popwin:create-popup-window (before pupo/before-popwin-create)
-  "Save current popup windows for later restoration.
-The windows are restored in `pupo/after-popwin-create'.
-Note that the windows themselves aren't saved, but some internal
-variables are updated instead."
-  (setq pupo--saved-buffers (mapcar #'window-buffer pupo--windows))
-  (setq pupo--saved-auto-buffers (mapcar #'window-buffer pupo--auto-windows)))
-
-(defadvice popwin:create-popup-window (after pupo/after-popwin-create)
-  "Restore popup windows.
-The windows were saved in `pupo/before-popwin-create'.
-Note that the windows themselves aren't restored, but some internal
-variables are updated instead."
-  (setq pupo--windows nil)
-  (cl-loop for buffer in pupo--saved-buffers
-        do (setq pupo--windows
-              (append pupo--windows
-                      (get-buffer-window-list buffer))))
-  (setq pupo--auto-windows nil)
-  (cl-loop for buffer in pupo--saved-auto-buffers
-        do (setq pupo--auto-windows
-                 (append pupo--auto-windows
-                         (get-buffer-window-list buffer)))))
-
 (defun pupo/sync-advices ()
   (if pupo-mode
       (progn
-        (ad-enable-advice 'popwin:create-popup-window 'before 'pupo/before-popwin-create)
-        (ad-enable-advice 'popwin:create-popup-window 'after 'pupo/after-popwin-create)
-        (ad-update 'popwin:create-popup-window)
-        (ad-activate 'popwin:create-popup-window))
-    (ad-disable-advice 'popwin:create-popup-window 'before 'pupo/before-popwin-create)
-    (ad-disable-advice 'popwin:create-popup-window 'after 'pupo/after-popwin-create)
-    (ad-update 'popwin:create-popup-window)))
+        (advice-add #'popwin:create-popup-window :before #'pupo/before-popwin-create)
+        (advice-add #'popwin:create-popup-window :after #'pupo/after-popwin-create))
+    (advice-remove #'popwin:create-popup-window #'pupo/before-popwin-create)
+    (advice-remove #'popwin:create-popup-window #'pupo/after-popwin-create)))
 (add-hook 'pupo-mode-hook #'pupo/sync-advices)
 
 (provide 'spacemacs-purpose-popwin)
